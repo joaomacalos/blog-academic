@@ -20,6 +20,8 @@ copyright = ""
 ## Advanced options below ##
 ############################
 
+math = true
+
 # Get last modified date for content from Git?
 enableGitInfo = false
 

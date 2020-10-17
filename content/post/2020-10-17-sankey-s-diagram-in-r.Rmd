@@ -4,7 +4,7 @@ author: João Pedro S. Macalós
 date: '2020-10-17'
 slug: sankey-s-diagram-in-r
 categories: []
-tags: []
+tags: [sfc]
 subtitle: ''
 summary: ''
 authors: []
@@ -14,21 +14,24 @@ image:
   caption: ''
   focal_point: ''
   preview_only: no
-projects: []
+projects: [sfc]
 output: 
-  blogdown::html_page:
-    pandoc_args: --webtex
+  blogdown::html_page
 bibliography: references.bib
 ---
 
-In this post I will explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
+<script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
+In this post I will explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Load packages and the main functions of the `sfc` beta-package (under construction):
+Load packages and the main functions of the `sfc` package (under construction):
 
 ```{r}
 library(tidyverse)
@@ -47,14 +50,6 @@ The objective of this notebook is to show how to simulate the chapter 3 model (S
 
 
 # SIM model
-
-\begin{equation*}
-\alpha = \beta + 3
-\end{equation*}
-
-$$
-\alpha = \beta + 3
-$$
 
 -  (Godley and Lavoie, ch. 3)
 
@@ -221,14 +216,18 @@ sim_nodes1 <- sim_nodes %>%
   ))
 
 
-networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data.frame(sim_nodes1), 
+sn <- networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data.frame(sim_nodes1), 
                           Source = 'source', 
                           Target = 'target', 
                           Value = 'value', 
                           NodeID = 'name',
                           units = 'dollars',
                           fontSize = 14)
+
+htmlwidgets::onRender(sn, 'function(el) { el.querySelector("svg").removeAttribute("viewBox") }')
 ```
+
+
 # Sankey's 2 (ggalluvial method)
 
 If you like the `ggplot2` way of making graphs, the `ggalluvial` package is the way.

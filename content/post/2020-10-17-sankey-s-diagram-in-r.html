@@ -4,7 +4,7 @@ author: João Pedro S. Macalós
 date: '2020-10-17'
 slug: sankey-s-diagram-in-r
 categories: []
-tags: []
+tags: [sfc]
 subtitle: ''
 summary: ''
 authors: []
@@ -14,10 +14,9 @@ image:
   caption: ''
   focal_point: ''
   preview_only: no
-projects: []
+projects: [sfc]
 output: 
-  blogdown::html_page:
-    pandoc_args: --webtex
+  blogdown::html_page
 bibliography: references.bib
 ---
 
@@ -28,8 +27,12 @@ bibliography: references.bib
 <script src="/rmarkdown-libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
 
 
+<script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 <p>In this post I will explain how to create a Sankey’s diagram to visualize a transactions-flow matrix of a SFC model.</p>
-<p>Load packages and the main functions of the <code>sfc</code> beta-package (under construction):</p>
+<p>Load packages and the main functions of the <code>sfc</code> package (under construction):</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages ---------------------------------------------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
 <pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
@@ -54,12 +57,6 @@ source(&#39;../../../sfc/gen_steady_todo.R&#39;)</code></pre>
 <p>The objective of this notebook is to show how to simulate the chapter 3 model (SIM model) of <span class="citation">Godley and Lavoie (2007)</span>.</p>
 <div id="sim-model" class="section level1">
 <h1>SIM model</h1>
-<p><span class="math display">\[\begin{equation*}
-\alpha = \beta + 3
-\end{equation*}\]</span></p>
-<p><span class="math display">\[
-\alpha = \beta + 3
-\]</span></p>
 <ul>
 <li>(Godley and Lavoie, ch. 3)</li>
 </ul>
@@ -217,16 +214,20 @@ links_sim_inflows &lt;- sim_inflows %&gt;%
   ))
 
 
-networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data.frame(sim_nodes1), 
+sn &lt;- networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data.frame(sim_nodes1), 
                           Source = &#39;source&#39;, 
                           Target = &#39;target&#39;, 
                           Value = &#39;value&#39;, 
                           NodeID = &#39;name&#39;,
                           units = &#39;dollars&#39;,
-                          fontSize = 14)</code></pre>
-<p><div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":[]}</script>
-# Sankey’s 2 (ggalluvial method)</p>
+                          fontSize = 14)
+
+htmlwidgets::onRender(sn, &#39;function(el) { el.querySelector(&quot;svg&quot;).removeAttribute(&quot;viewBox&quot;) }&#39;)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":{"render":[{"code":"function(el) { el.querySelector(\"svg\").removeAttribute(\"viewBox\") }","data":null}]}}</script>
+</div>
+<div id="sankeys-2-ggalluvial-method" class="section level1">
+<h1>Sankey’s 2 (ggalluvial method)</h1>
 <p>If you like the <code>ggplot2</code> way of making graphs, the <code>ggalluvial</code> package is the way.</p>
 <p>It must be said, though, that alluvial plots are slightly different than Sankey’s diagram. More information can be retrieved <a href="https://rkabacoff.github.io/datavis/Other.html#flow-diagrams">in this book</a>.</p>
 <p>It’s easier to see the logic using the wider method: you have three axis, and one column of values.</p>
