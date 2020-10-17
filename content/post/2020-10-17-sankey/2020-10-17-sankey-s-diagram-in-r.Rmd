@@ -3,27 +3,25 @@ title: Sankey's diagram in R
 author: João Pedro S. Macalós
 date: '2020-10-17'
 slug: sankey-s-diagram-in-r
-categories: []
+categories: [post]
 tags: [sfc]
 subtitle: ''
 summary: ''
 authors: []
 lastmod: '2020-10-17T12:36:10+02:00'
 featured: no
+# Featured image
+# To use, add an image named `featured.jpg/png` to your page's folder. 
 image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
+  caption: ""
+  focal_point: ""
 projects: [sfc]
 output: 
   blogdown::html_page
 bibliography: references.bib
+header:
+  image: "/headers/sankey.png"
 ---
-
-<script src="//yihui.name/js/math-code.js"></script>
-<script async
-src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
 
 In this post I will explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
 
@@ -40,7 +38,7 @@ library(catchr)
 library(blogdown)
 
 
-source('../../../sfc/gen_steady_todo.R')
+source('../../../../sfc/gen_steady_todo.R')
 
 ##### Not in operator
 '%!in%' <- function(x,y)!('%in%'(x,y))
@@ -225,6 +223,7 @@ sn <- networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data
                           fontSize = 14)
 
 htmlwidgets::onRender(sn, 'function(el) { el.querySelector("svg").removeAttribute("viewBox") }')
+
 ```
 
 
