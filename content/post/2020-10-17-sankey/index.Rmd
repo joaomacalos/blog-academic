@@ -3,24 +3,20 @@ title: Sankey's diagram in R
 author: João Pedro S. Macalós
 date: '2020-10-17'
 slug: sankey-s-diagram-in-r
-categories: [post]
+categories: [sfc]
 tags: [sfc]
 subtitle: ''
 summary: ''
 authors: []
 lastmod: '2020-10-17T12:36:10+02:00'
-featured: no
-# Featured image
-# To use, add an image named `featured.jpg/png` to your page's folder. 
+featured: true
 image:
-  caption: ""
-  focal_point: ""
+  placement: 2
+  focal_point: "Center"
+  preview_only: true
 projects: [sfc]
-output: 
-  blogdown::html_page
+#output: blogdown::html_page
 bibliography: references.bib
-header:
-  image: "/headers/sankey.png"
 ---
 
 In this post I will explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
