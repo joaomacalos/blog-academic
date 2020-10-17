@@ -1,6 +1,6 @@
 ---
 # Display name
-title: Nelson Bighetti
+title: João Pedro S. Macalós
 
 # Username (this should match the folder name)
 authors:
@@ -10,32 +10,32 @@ authors:
 superuser: true
 
 # Role/position
-role: Professor of Artificial Intelligence
+role: Ph.D. Candidate / Economics
 
 # Organizations/Affiliations
 organizations:
-- name: Stanford University
+- name: Université Sorbonne Paris Nord
   url: ""
 
 # Short bio (displayed in user profile at end of posts)
-bio: My research interests include distributed robotics, mobile computing and programmable matter.
+bio: My research interests include international macroeconomics, financial globalization, and central banking in emerging markets.
 
 interests:
-- Artificial Intelligence
-- Computational Linguistics
-- Information Retrieval
+- International macroeconomics
+- Central banking
+- Causal inference
 
 education:
   courses:
-  - course: PhD in Artificial Intelligence
-    institution: Stanford University
-    year: 2012
-  - course: MEng in Artificial Intelligence
-    institution: Massachusetts Institute of Technology
-    year: 2009
-  - course: BSc in Artificial Intelligence
-    institution: Massachusetts Institute of Technology
-    year: 2008
+  - course: ME in Economics
+    institution: Universidade Estadual de Campinas
+    year: 2018
+  - course: ME in Economics
+    institution: Université Paris 13 and Université Paris 7
+    year: 2017
+  - course: BSc in Economics
+    institution: Universidade Federal do Rio Grande do Sul
+    year: 2014
 
 # Social/Academic Networking
 # For available icons, see: https://sourcethemes.com/academic/docs/page-builder/#icons
@@ -44,16 +44,16 @@ education:
 social:
 - icon: envelope
   icon_pack: fas
-  link: '#contact'  # For a direct email link, use "mailto:test@example.org".
+  link: '#contact'  # For a direct email link, use "mailto:joaomacalos@gmail.com".
 - icon: twitter
   icon_pack: fab
-  link: https://twitter.com/GeorgeCushen
+  link: https://twitter.com/jpmacalos
 - icon: google-scholar
   icon_pack: ai
-  link: https://scholar.google.co.uk/citations?user=sIwtMXoAAAAJ
+  link: https://scholar.google.com/citations?user=FlkKNVAAAAAJ&hl
 - icon: github
   icon_pack: fab
-  link: https://github.com/gcushen
+  link: https://github.com/joaomacalos
 # Link to a PDF of your resume/CV from the About widget.
 # To enable, copy your resume/CV to `static/files/cv.pdf` and uncomment the lines below.
 # - icon: cv
@@ -73,6 +73,6 @@ user_groups:
 - Visitors
 ---
 
-Nelson Bighetti is a professor of artificial intelligence at the Stanford AI Lab. His research interests include distributed robotics, mobile computing and programmable matter. He leads the Robotic Neurobiology group, which develops self-reconfiguring robots, systems of self-organizing robots, and mobile sensor networks.
+A Brazilian expatriate in Paris, I'm a Ph.D. candidate in Economics at the Centre d'Économie de l'Université Paris Nord (CEPN). My research interests include financial globalization, the integration of emerging economies to global markets, and international macroeconomics. I'm also one of the coordinators of the States & Markets working group at the Young Scholars' Initiative (YSI).
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.
+I love football (it is football, not soccer, please.), statistics, literature, and economics, not necessarily in that order.

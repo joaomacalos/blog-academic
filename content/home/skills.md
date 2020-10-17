@@ -21,16 +21,16 @@ subtitle = ""
   description = "90%"
   
 [[feature]]
-  icon = "chart-line"
+  icon = "futbol"
   icon_pack = "fas"
-  name = "Statistics"
-  description = "100%"  
+  name = "Football"
+  description = "63%"  
   
 [[feature]]
-  icon = "camera-retro"
+  icon = "chart-pie"
   icon_pack = "fas"
-  name = "Photography"
-  description = "10%"
+  name = "Pie chart"
+  description = "100%"
 
 # Uncomment to use emoji icons.
 # [[feature]]
