@@ -1,8 +1,31 @@
-<script src="2020-10-17-sankey-s-diagram-in-r_files/header-attrs-2.3/header-attrs.js"></script>
-<script src="2020-10-17-sankey-s-diagram-in-r_files/htmlwidgets-1.5.1/htmlwidgets.js"></script>
-<script src="2020-10-17-sankey-s-diagram-in-r_files/d3-4.5.0/d3.min.js"></script>
-<script src="2020-10-17-sankey-s-diagram-in-r_files/sankey-1/sankey.js"></script>
-<script src="2020-10-17-sankey-s-diagram-in-r_files/sankeyNetwork-binding-0.4/sankeyNetwork.js"></script>
+---
+title: Sankey's diagram in R
+author: João Pedro S. Macalós
+date: '2020-10-17'
+slug: sankey-s-diagram-in-r
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-10-17T12:36:10+02:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+output: 
+  blogdown::html_page:
+    pandoc_args: --webtex
+bibliography: references.bib
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/d3/d3.min.js"></script>
+<script src="/rmarkdown-libs/sankey/sankey.js"></script>
+<script src="/rmarkdown-libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
 
 
 <p>In this post I will explain how to create a Sankey’s diagram to visualize a transactions-flow matrix of a SFC model.</p>
@@ -201,8 +224,8 @@ networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.data.frame
                           NodeID = &#39;name&#39;,
                           units = &#39;dollars&#39;,
                           fontSize = 14)</code></pre>
-<p><div id="htmlwidget-74602a28b337e9063bfc" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-74602a28b337e9063bfc">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":[]}</script>
+<p><div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":[]}</script>
 # Sankey’s 2 (ggalluvial method)</p>
 <p>If you like the <code>ggplot2</code> way of making graphs, the <code>ggalluvial</code> package is the way.</p>
 <p>It must be said, though, that alluvial plots are slightly different than Sankey’s diagram. More information can be retrieved <a href="https://rkabacoff.github.io/datavis/Other.html#flow-diagrams">in this book</a>.</p>
@@ -236,7 +259,7 @@ dt_wide &lt;- bind_cols(sim_outflows, sim_inflows) %&gt;%
 
 ## Warning in to_lodes_form(data = data, axes = axis_ind, discern =
 ## params$discern): Some strata appear at multiple axes.</code></pre>
-<p><img src="2020-10-17-sankey-s-diagram-in-r_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><img src="/post/2020-10-17-sankey-s-diagram-in-r_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>However, as usually is the case with ggplot graphs, you have much more control using the long format.</p>
 <p>Here’s how you should transform the data:</p>
 <pre class="r"><code>dt_long &lt;- dt_wide %&gt;%
@@ -283,7 +306,7 @@ dt_long</code></pre>
   ggrepel::geom_label_repel(stat = &quot;stratum&quot;, size = 3) +
   theme_void() +
   theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="2020-10-17-sankey-s-diagram-in-r_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="/post/2020-10-17-sankey-s-diagram-in-r_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>The alluvial method might be more consistent in its syntax, but it is, in my opinion, uglier, and do not represent small values (like monetary balances in this example) well.</p>
 <div id="session-info" class="section level2">
 <h2>Session info</h2>

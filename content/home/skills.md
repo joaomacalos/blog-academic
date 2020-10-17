@@ -24,7 +24,7 @@ subtitle = ""
   icon = "futbol"
   icon_pack = "fas"
   name = "Football"
-  description = "63%"  
+  description = "64%"  
   
 [[feature]]
   icon = "chart-pie"
