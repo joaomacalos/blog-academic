@@ -15,7 +15,7 @@ image:
   focal_point: "Center"
   preview_only: true
 projects: [sfc]
-#output: blogdown::html_page
+output: blogdown::html_page
 bibliography: references.bib
 ---
 
