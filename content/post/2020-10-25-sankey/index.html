@@ -1,11 +1,32 @@
-<script src="index_files/header-attrs-2.3/header-attrs.js"></script>
-<script src="index_files/htmlwidgets-1.5.1/htmlwidgets.js"></script>
-<script src="index_files/d3-4.5.0/d3.min.js"></script>
-<script src="index_files/sankey-1/sankey.js"></script>
-<script src="index_files/sankeyNetwork-binding-0.4/sankeyNetwork.js"></script>
+---
+title: Sankey's diagram in R
+author: João Pedro S. Macalós
+date: '2020-10-25'
+slug: sankey-s-diagram-in-r
+categories: [sfc]
+tags: [sfc]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-10-25T12:36:10+02:00'
+featured: true
+image:
+  placement: 2
+  focal_point: "Center"
+  preview_only: true
+projects: [sfc]
+output: blogdown::html_page
+bibliography: references.bib
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/d3/d3.min.js"></script>
+<script src="/rmarkdown-libs/sankey/sankey.js"></script>
+<script src="/rmarkdown-libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
 
 
-<p>In this post I will explain how to create a Sankey’s diagram to visualize a transactions-flow matrix of a SFC model.</p>
+<p>In this post I explain how to create a Sankey’s diagram to visualize a transactions-flow matrix of a SFC model.</p>
 <p>Load the packages used in this post:</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
@@ -180,8 +201,8 @@ sn &lt;- networkD3::sankeyNetwork(Links = as.data.frame(links_sim), Nodes = as.d
                           fontSize = 14)
 
 htmlwidgets::onRender(sn, &#39;function(el) { el.querySelector(&quot;svg&quot;).removeAttribute(&quot;viewBox&quot;) }&#39;)</code></pre>
-<div id="htmlwidget-3c0d9dceb63c58518b67" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3c0d9dceb63c58518b67">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":{"render":[{"code":"function(el) { el.querySelector(\"svg\").removeAttribute(\"viewBox\") }","data":null}]}}</script>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[7,6,7,5,7,0,1,2,3,4],"target":[0,1,2,3,4,8,8,9,10,9],"value":[79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811,79.9813074867666,20,0.00261138320718146,99.9776461578679,19.9955220513811]},"nodes":{"name":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"],"group":["Consumption","Gvt. Expenditures","Δ Monetary balances","Wage Bills","Taxes","Firms","Government","Households","Firms","Government","Households"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":{"render":[{"code":"function(el) { el.querySelector(\"svg\").removeAttribute(\"viewBox\") }","data":null}]}}</script>
 </div>
 <div id="sankeys-2-ggalluvial-method" class="section level1">
 <h1>Sankey’s 2 (ggalluvial method)</h1>
@@ -215,7 +236,7 @@ htmlwidgets::onRender(sn, &#39;function(el) { el.querySelector(&quot;svg&quot;).
 
 ## Warning in to_lodes_form(data = data, axes = axis_ind, discern =
 ## params$discern): Some strata appear at multiple axes.</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><img src="/post/2020-10-25-sankey/index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>However, as usually is the case with ggplot graphs, you have much more control using the long format.</p>
 <p>Here’s how you should transform the data:</p>
 <pre class="r"><code>dt_long &lt;- dt_wide %&gt;%
@@ -262,7 +283,7 @@ dt_long</code></pre>
   ggrepel::geom_label_repel(stat = &quot;stratum&quot;, size = 3) +
   theme_void() +
   theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="/post/2020-10-25-sankey/index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>The alluvial method might be more consistent in its syntax, but it is, in my opinion, uglier, and do not represent small values (like monetary balances in this example) well.</p>
 <div id="session-info" class="section level2">
 <h2>Session info</h2>
@@ -289,21 +310,22 @@ dt_long</code></pre>
 ##  [9] tidyr_1.1.2       tibble_3.0.4      ggplot2_3.3.2     tidyverse_1.3.0  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] ggrepel_0.8.2      Rcpp_1.0.4.6       lubridate_1.7.8    assertthat_0.2.1  
-##  [5] digest_0.6.26      utf8_1.1.4         R6_2.4.1           cellranger_1.1.0  
-##  [9] backports_1.1.6    reprex_0.3.0       evaluate_0.14      httr_1.4.2        
-## [13] blogdown_0.18      pillar_1.4.6       rlang_0.4.8        readxl_1.3.1      
-## [17] rstudioapi_0.11    rmarkdown_2.3      labeling_0.3       htmlwidgets_1.5.1 
-## [21] igraph_1.2.4.1     munsell_0.5.0      broom_0.7.0        compiler_3.6.3    
-## [25] modelr_0.1.6       xfun_0.18          pkgconfig_2.0.3    htmltools_0.4.0   
-## [29] tidyselect_1.1.0   bookdown_0.20      fansi_0.4.1        crayon_1.3.4      
-## [33] dbplyr_1.4.2       withr_2.3.0        grid_3.6.3         jsonlite_1.7.1    
-## [37] gtable_0.3.0       lifecycle_0.2.0    DBI_1.1.0          magrittr_1.5      
-## [41] catchr_0.2.3       scales_1.1.0       cli_2.1.0          stringi_1.5.3     
-## [45] farver_2.0.3       fs_1.4.1           xml2_1.3.1         ellipsis_0.3.1    
-## [49] generics_0.0.2     vctrs_0.3.4        RColorBrewer_1.1-2 tools_3.6.3       
-## [53] Cairo_1.5-11       glue_1.4.2         hms_0.5.3          yaml_2.2.1        
-## [57] colorspace_1.4-1   rvest_0.3.5        knitr_1.30         haven_2.2.0</code></pre>
+##  [1] ggrepel_0.8.2      Rcpp_1.0.4.6       lubridate_1.7.8    ps_1.3.2          
+##  [5] assertthat_0.2.1   digest_0.6.26      utf8_1.1.4         R6_2.4.1          
+##  [9] cellranger_1.1.0   backports_1.1.6    reprex_0.3.0       evaluate_0.14     
+## [13] httr_1.4.2         blogdown_0.18      pillar_1.4.6       rlang_0.4.8       
+## [17] readxl_1.3.1       rstudioapi_0.11    rmarkdown_2.3      labeling_0.3      
+## [21] htmlwidgets_1.5.1  igraph_1.2.4.1     munsell_0.5.0      broom_0.7.0       
+## [25] compiler_3.6.3     modelr_0.1.6       xfun_0.18          pkgconfig_2.0.3   
+## [29] htmltools_0.4.0    tidyselect_1.1.0   bookdown_0.20      fansi_0.4.1       
+## [33] crayon_1.3.4       dbplyr_1.4.2       withr_2.3.0        grid_3.6.3        
+## [37] jsonlite_1.7.1     gtable_0.3.0       lifecycle_0.2.0    DBI_1.1.0         
+## [41] magrittr_1.5       catchr_0.2.3       scales_1.1.0       cli_2.1.0         
+## [45] stringi_1.5.3      farver_2.0.3       fs_1.4.1           xml2_1.3.1        
+## [49] ellipsis_0.3.1     generics_0.0.2     vctrs_0.3.4        RColorBrewer_1.1-2
+## [53] tools_3.6.3        Cairo_1.5-11       glue_1.4.2         hms_0.5.3         
+## [57] yaml_2.2.1         colorspace_1.4-1   rvest_0.3.5        knitr_1.30        
+## [61] haven_2.2.0</code></pre>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>

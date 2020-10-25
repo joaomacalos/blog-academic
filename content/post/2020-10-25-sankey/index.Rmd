@@ -19,7 +19,7 @@ output: blogdown::html_page
 bibliography: references.bib
 ---
 
-In this post I will explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
+In this post I explain how to create a Sankey's diagram to visualize a transactions-flow matrix of a SFC model.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
