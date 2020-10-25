@@ -2,6 +2,7 @@
 # Documentation: https://wowchemy.com/docs/managing-content/
 
 title: "Up the stairs, down the elevator?"
+subtitle: "The asymmetric response of emerging markets' currencies to the global liquidity cycle"
 event: "48th Anpec meeting"
 event_url: "https://en.anpec.org.br/"
 location:
@@ -11,7 +12,7 @@ address:
   region:
   postcode:
   country:
-summary:
+summary: "This paper assesses whether there is evidence of an asymmetric relationship between the global liquidity cycle and the currencies of developing and emerging economies (DEEs), a central tenet of the Minskyan interpretation of the exchange rate behavior in these economies and the 'financialization in emerging economies' literature. We use a novel panel model technique that incorporates asymmetric components to fixed-effects regressions to check if there is evidence of such asymmetry. Our results suggest that capital flows, commodity prices, and the VIX have a more substantial relationship with the currencies of DEEs during the retrenchment of the global liquidity cycle than during its expansionist phase. In other words, our results suggest that the currencies of DEEs move up by the stairs and down by the elevator."
 abstract:
 
 # Talk start and end times.
@@ -23,7 +24,7 @@ all_day: false
 # Schedule page publish date (NOT talk date).
 publishDate: 2020-10-25T12:20:05+01:00
 
-authors: []
+authors: ["admin"]
 tags: []
 
 # Is this a featured talk? (true/false)
@@ -49,7 +50,7 @@ image:
 url_slides:
 
 url_code:
-url_pdf:
+url_pdf: "https://www.anpec.org.br/encontro/2020/submissao/files_I/i7-209227f965e498af6a1c019afa803743.pdf"
 url_video:
 
 # Markdown Slides (optional).
