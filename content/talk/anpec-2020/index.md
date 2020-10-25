@@ -23,7 +23,7 @@ all_day: false
 # Schedule page publish date (NOT talk date).
 publishDate: 2020-10-25T12:20:05+01:00
 
-authors: ["admin"]
+authors: ["admin", "Pedro Rossi"]
 tags: []
 
 # Is this a featured talk? (true/false)
