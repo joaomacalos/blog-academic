@@ -8,7 +8,7 @@ tags: [sfc]
 subtitle: ''
 summary: ''
 authors: []
-lastmod: '2020-10-17T12:36:10+02:00'
+lastmod: '2020-10-25T12:36:10+02:00'
 featured: true
 image:
   placement: 2
@@ -25,16 +25,13 @@ In this post I will explain how to create a Sankey's diagram to visualize a tran
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Load packages and the main functions of the `sfc` package (under construction):
+Load the packages used in this post:
 
 ```{r}
 library(tidyverse)
-library(formula.tools)
-library(catchr)
-library(blogdown)
-
-
-source('../../../../sfc/gen_steady_todo.R')
+library(ggalluvial)
+library(networkD3)
+library(sfcr)
 
 ##### Not in operator
 '%!in%' <- function(x,y)!('%in%'(x,y))
@@ -45,38 +42,30 @@ The objective of this notebook is to show how to simulate the chapter 3 model (S
 
 # SIM model
 
--  (Godley and Lavoie, ch. 3)
-
 Define sectoral equations
 ```{r}
-households <- list(
-  eh1 <- TX_s[t] ~ TX_d[t],
-  eh2 <- YD[t] ~ W * N_s[t] - TX_s[t],
-  eh3 <- C_d[t] ~ parh2 * YD[t] + parh3 * H_h[t-1],
-  eh4 <- H_h[t] ~ YD[t] - C_d[t] + H_h[t-1],
-  eh5 <- N_s[t] ~ N_d[t]
-)
-
-production <- list(
-  ep1 <- N_d[t] ~ Y[t] / W,
-  ep2 <- C_s[t] ~ C_d[t],
-  ep3 <- G_s[t] ~ G_d[t],
-  ep4 <- Y[t] ~ C_s[t] + G_s[t]
-  
-)
-
-government <- list(
-  eg1 <- TX_d[t] ~ parh1 * W * N_s[t],
-  eg2 <- H_s[t] ~ G_d[t] - TX_d[t] + H_s[t-1]
+equations <- list(
+  TX_s[t] ~ TX_d[t],
+  YD[t] ~ W * N_s[t] - TX_s[t],
+  C_d[t] ~ parh2 * YD[t] + parh3 * H_h[t-1],
+  H_h[t] ~ YD[t] - C_d[t] + H_h[t-1],
+  N_s[t] ~ N_d[t],
+  N_d[t] ~ Y[t] / W,
+  C_s[t] ~ C_d[t],
+  G_s[t] ~ G_d[t],
+  Y[t] ~ C_s[t] + G_s[t],
+  TX_d[t] ~ parh1 * W * N_s[t],
+  H_s[t] ~ G_d[t] - TX_d[t] + H_s[t-1]
 )
 
 ```
 
 Generate the model
 ```{r}
-mod_sim <- gen_steady(sectors = list(households, production, government), 
+mod_sim <- sfcr_sim(equations = equations, 
                       t = 60,
-                      exogenous = list(G_d = 20), parameters = list(W = 1, parh1 = 0.2, parh2 = 0.6, parh3 = 0.4))
+                      exogenous = list("G_d" = 20), 
+                      parameters = list(W = 1, parh1 = 0.2, parh2 = 0.6, parh3 = 0.4))
 
 ```
 
@@ -106,7 +95,7 @@ We must exclude the items that are not there, like disposable income (YD), Y, W,
 
 ```{r}
 sim_ss <- sim_ss %>%
-  pivot_longer(cols = -row_id) %>%
+  pivot_longer(cols = -t) %>%
   filter(name %!in% c('YD', 'Y')) %>%
   filter(!str_detect(name, 'par'))
 sim_ss
@@ -147,7 +136,7 @@ sim_outflows <- sim_ss %>%
 ```
 
 
-We are ready to load the `networkD3` package. I do recommend [this article](https://towardsdatascience.com/using-networkd3-in-r-to-create-simple-and-clear-sankey-diagrams-48f8ba8a4ace) as it was the best tutorial I found on the internet on how to draw Sankey's diagrams on R.
+If these steps are not clear, I recommend [this article](https://towardsdatascience.com/using-networkd3-in-r-to-create-simple-and-clear-sankey-diagrams-48f8ba8a4ace) as it was the best tutorial I found on the internet on how to draw Sankey's diagrams on R.
 
 Here, we must remember that a SFC Sankey's diagram is structured in three columns: 
 
@@ -160,8 +149,6 @@ The objects in these columns are the `nodes` of the Sankey's diagram. They are t
 Finally, we must give each unique entry a numeric id. Importantly, it must be zero indexed.
 
 ```{r}
-library(networkD3)
-
 sim_nodes <- tibble(name = c(unique(sim_inflows$name), 
                  unique(sim_inflows$sector), 
                  str_c(unique(sim_inflows$sector), '1')),
@@ -232,8 +219,6 @@ It must be said, though, that alluvial plots are slightly different than Sankey'
 It's easier to see the logic using the wider method: you have three axis, and one column of values.
 
 ```{r}
-library(ggalluvial)
-
 dt_wide <- bind_cols(sim_outflows, sim_inflows) %>%
   select(3, 1, 6, 2) %>%
   set_names('sector1', 'flows', 'sector2', 'value') 

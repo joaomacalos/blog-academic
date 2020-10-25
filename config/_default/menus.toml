@@ -31,7 +31,7 @@
 [[main]]
   name = "sfcr"
   url = "https://joaomacalos.github.io/sfcr/"
-  weight = 50
+  weight = 55
 
 [[main]]
   name = "Contact"
