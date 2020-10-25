@@ -1,9 +1,9 @@
 ---
 # Documentation: https://wowchemy.com/docs/managing-content/
 
-title: "Anpec 2020"
-event:
-event_url:
+title: "Up the stairs, down the elevator? The asymmetric response of emergin markets' currencies to the global liquidity cycle"
+event: "48th Anpec meeting"
+event_url: "https://en.anpec.org.br/"
 location:
 address:
   street:
@@ -16,8 +16,8 @@ abstract:
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-date: 2020-10-25T12:20:05+01:00
-date_end: 2020-10-25T12:20:05+01:00
+date: 2020-12-07T12:20:05+01:00
+date_end: 2020-12-11T12:20:05+01:00
 all_day: false
 
 # Schedule page publish date (NOT talk date).
