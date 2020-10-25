@@ -1,7 +1,7 @@
 ---
 # Documentation: https://wowchemy.com/docs/managing-content/
 
-title: "Up the stairs, down the elevator? The asymmetric response of emergin markets' currencies to the global liquidity cycle"
+title: "Up the stairs, down the elevator?"
 event: "48th Anpec meeting"
 event_url: "https://en.anpec.org.br/"
 location:
