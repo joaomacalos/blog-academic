@@ -23,6 +23,7 @@ bio: My research interests include international macroeconomics, financial globa
 interests:
 - International macroeconomics
 - Central banking
+- Stock-flow consistent models
 - Causal inference
 
 education:
@@ -78,4 +79,4 @@ user_groups:
 
 A Brazilian expatriate in Paris. I'm a Ph.D. candidate in Economics at the Centre d'Économie de l'Université Paris Nord (CEPN). My research interests include financial globalization, the integration of emerging economies to global markets, and international macroeconomics. I'm also one of the coordinators of the States & Markets working group at the Young Scholars' Initiative (YSI).
 
-I love football (it is football, not soccer, please.), statistics, literature, and economics, not necessarily in that order.
+I love football (it is football, not soccer, please.), economics, literature, and statistics, not necessarily in that order.
