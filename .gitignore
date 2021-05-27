@@ -5,3 +5,9 @@
 /resources/
 public/
 .Rproj.user
+
+# Rdata
+.RData
+.Rhistory
+.Rproj.user
+academic.Rproj

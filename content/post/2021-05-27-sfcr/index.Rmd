@@ -1,0 +1,286 @@
+---
+title: "sfcr package in action"
+author: João Pedro S. Macalós
+categories: [sfcr]
+tags: [sfcr]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-05-27'
+featured: true
+image:
+  placement: 2
+  focal_point: 'Center'
+  preview_only: true
+projects: [sfcr]
+output: blogdown::html_page
+references:
+- id: godley2007monetary
+  title: >
+       Monetary Economics: An Integrated Approach To Credit, Money, Income, Production and Wealth
+  author:
+  - family: Godley
+    given: Wynne
+  - family: Lavoie
+    given: Marc
+  publisher: Palgrave Macmillan
+  type: book
+  issued:
+    year: 2007
+---
+
+The objective of this notebook is to show just the tip of the iceberg of what is possible to accomplish with the *sfcr* package. In this example, I'm going to work with the Portfolio Choice model from @godley2007monetary.
+
+As usual, we start by loading the required packages:
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  paged.print = F
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(sfcr)
+```
+
+# The matrices of model PC
+
+We start the analysis by writing down the balance-sheet and transactions-flow matrices of the model with the help of the `sfcr_matrix()` function:
+
+```{r}
+bs_pc <- sfcr_matrix(
+  columns = c("Households", "Firms", "Government", "Central bank", "sum"),
+  codes = c("h", "f", "g", "cb", "s"),
+  r1 = c("Money", h = "+Hh", cb = "-Hs"),
+  r2 = c("Bills", h = "+Bh", g = "-Bs", cb = "+Bcb"),
+  r3 = c("Balance", h = "-V", g = "+V")
+)
+
+sfcr_matrix_display(bs_pc, "bs")
+```
+
+```{r}
+tfm_pc <- sfcr_matrix(
+  columns = c("Households", "Firms", "Government", "CB current", "CB capital"),
+  codes = c("h", "f", "g", "cbc", "cbk"),
+  c("Consumption", h = "-C", f = "+C"),
+  c("Govt. Expenditures", f = "+G", g = "-G"),
+  c("Income", h = "+Y", f = "-Y"),
+  c("Int. payments", h = "+r[-1] * Bh[-1]", g = "-r[-1] * Bs[-1]", cbc = "+r[-1] * Bcb[-1]"),
+  c("CB profits", g = "+r[-1] * Bcb[-1]", cbc = "-r[-1] * Bcb[-1]"),
+  c("Taxes", h = "-TX", g = "+TX"),
+  c("Ch. Money", h = "-(Hh - Hh[-1])", cbk = "+(Hs - Hs[-1])"),
+  c("Ch. Bills", h = "-(Bh - Bh[-1])", g = "+(Bs - Bs[-1])", cbk = "-(Bcb - Bcb[-1])")
+)
+
+sfcr_matrix_display(tfm_pc)
+```
+
+## The model
+
+To simulate the model, we first write down the equations and the external values with the `sfcr_set()` function:
+
+```{r}
+pc_eqs <- sfcr_set(
+  Y ~ C + G,
+  YD ~ Y - TX + r[-1] * Bh[-1],
+  TX ~ theta * (Y + r[-1] * Bh[-1]),
+  V ~ V[-1] + (YD - C),
+  C ~ alpha1 * YD + alpha2 * V[-1],
+  Hh ~ V - Bh,
+  Hh1 ~ V * ((1 - lambda0) - lambda1 * r + lambda2 * ( YD/V )), # EQ 4.6A
+  Bh ~ V * (lambda0 + lambda1 * r - lambda2 * ( YD/V )),
+  Bs ~ Bs[-1] + (G + r[-1] * Bs[-1]) - (TX + r[-1] * Bcb[-1]),
+  Hs ~ Hs[-1] + Bcb - Bcb[-1],
+  Bcb ~ Bs - Bh
+)
+
+pc_ext <- sfcr_set(
+  # Exogenous
+  
+  r ~ 0.025,
+  G ~ 20,
+  
+  # Parameters
+  
+  alpha1 ~ 0.6,
+  alpha2 ~ 0.4,
+  theta ~ 0.2,
+  lambda0 ~ 0.635,
+  lambda1 ~ 0.05,
+  lambda2 ~ 0.01
+)
+
+```
+
+
+We then simulate the model to get the steady state values:
+
+```{r}
+pc <- sfcr_baseline(
+  equations = pc_eqs, 
+  external = pc_ext, 
+  periods = 70, 
+  hidden = c("Hh" = "Hs")
+)
+
+```
+
+The fact that the hidden equation is fulfilled already indicates that the accounting part of the model is water tight. 
+
+However, the `sfcr` package proposes a validation workflow where the user uses the simulated model and the balance-sheet and transactions-flow matrices to further validate that the model is consistent.
+
+```{r}
+sfcr_validate(bs_pc, pc, "bs")
+```
+```{r}
+sfcr_validate(tfm_pc, pc, "tfm")
+```
+
+Given the portfolio choice equations, the model is well specified if equation 4.6A is equal to 4.6. We can use the base `all.equal()` function to check it:
+
+```{r}
+all.equal(pc$Hh, pc$Hh1)
+```
+
+We can safely conclude that the baseline model is well specified. The `sfcr` package also allows the user to plot the DAG representation of the model and a Sankey's diagram of the transactions-flow matrix. Let's check it out:
+
+## DAG
+
+Let's  use the `sfcr_dag_cycles_plot()` function to see the structure of the model:
+
+```{r}
+sfcr_dag_cycles_plot(pc_eqs)
+```
+
+As can be seen, there's a cycle in this model. The `sfcr` package relies on the `igraph` package to identify the best ordering of the equations, reducing the the its computational burden. The blocks of independent equations and the iterations needed at each block to simulate the model can be retrieved by calling the `sfcr_get_matrix()` and `sfcr_get_blocks()` equations.
+
+Alternatively, it is also possible to use the `sfcr_dag_blocks_plot()` function to visualize this structure:
+
+```{r}
+sfcr_dag_blocks_plot(pc_eqs)
+```
+
+## Sankey's diagram
+
+Another functionality offered by the `sfcr` package is that it can generate a Sankey's diagram representation of the transactions-flow matrix.
+
+Here, it is crucial to have the matrix validated in order to assure that the diagram is correctly specified. Luckily, we already saw that it was the case earlier in this notebook:
+
+```{r}
+sfcr_sankey(tfm_pc, pc)
+```
+
+We can now move to simulation of different scenarios.
+
+
+# Scenario 1: Increase in the rate of interest on bills
+
+Let's start by increasing the rate of interest on bills by 100 points:
+
+```{r}
+shock1 <- sfcr_shock(
+  variables = sfcr_set(
+    r ~ 0.035
+  ),
+  start = 5,
+  end = 60
+)
+
+pc2 <- sfcr_scenario(pc, scenario = shock1, periods = 60)
+```
+
+
+What happen in this scenario with the share of bills/money in household portfolios?
+
+Since these ratios are not calculated when we simulate the scenario, we must calculate them now. We use the `dplyr` package from the `tidyverse` to manipulate the model:
+
+```{r}
+pc2 <- pc2 %>%
+  mutate(BV = Bh / V,
+         MV = Hh / V)
+```
+
+We reshape the model into the long format, and then we plot.
+
+```{r}
+pc2_long <- pc2 %>%
+  pivot_longer(cols = -period)
+
+pc2_long %>%
+  filter(name %in% c("BV", "MV")) %>%
+  ggplot(aes(x = period, y = value)) +
+  geom_line() +
+  facet_wrap(~ name, scales = 'free_y') +
+  labs(title = "Wealth alocation")
+```
+
+
+```{r}
+pc2_long %>%
+  filter(name %in% c("YD", "C")) %>%
+  ggplot(aes(x = period, y = value)) +
+  geom_line(aes(linetype = name)) +
+  labs(title = "Evolution of disposable income and household consumption",
+       subtitle = "Following an increase of 100 points in the rate of interest")
+```
+
+
+## Visualizing the sensitivity to parameters' values
+
+Let's check the sensitivity of the model with the `sfcr_expand()` and `sfcr_multis()` functions:
+
+```{r}
+values <- seq(0.61, 0.8, 0.01)
+alpha1Exp <- sfcr_expand(x = pc_ext, variable = alpha1, values = values)
+#
+```
+
+We then use the `sfcr_multis()` function to generate multiple baseline models:
+
+```{r}
+pc_multi_bl <- sfcr_multis(alpha1Exp, pc_eqs, periods = 50)
+```
+
+Finally, apply the `shock1` shock to all the models in `pc_multi_bl`:
+
+```{r}
+shock1 <- sfcr_shock(
+  variables = sfcr_set(
+    r ~ 0.035
+  ),
+  start = 5,
+  end = 50
+)
+
+pc_multi_scn <- sfcr_multis(pc_multi_bl, shock1, periods = 50)
+```
+
+
+```{r, fig.width=9, fig.height=7}
+# We also need to expand the color palettes
+colourCount <- 20 # number of levels
+getPalette <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(6, "GnBu")[c(3:6)])
+
+bind_rows(pc_multi_scn) %>%
+  mutate(simulation = as_factor(simulation)) %>%
+  pivot_longer(cols = -c(period, simulation)) %>%
+  filter(name %in% c("Y", "YD", "C")) %>%
+  ggplot(aes(x = period, y = value, color = simulation)) +
+  geom_line() +
+  theme(legend.position = "bottom") +
+  scale_color_manual("alpha10",
+    values = getPalette(20),
+    labels = as.character(values)) +
+  facet_wrap(~ name, scales = 'free_y')
+```
+
+We can see that the changing the `alpha1` parameter affects the level of the variables but do not change its underlying dynamics.
+
+# References
+
+

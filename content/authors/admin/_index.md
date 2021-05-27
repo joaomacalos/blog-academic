@@ -18,7 +18,7 @@ organizations:
   url: ""
 
 # Short bio (displayed in user profile at end of posts)
-bio: My research interests include international macroeconomics, financial globalization, and central banking in emerging markets.
+bio: My research interests include econometrics, machine learning, stock-flow consistent models, and central banking in emerging economies.
 
 interests:
 - Machine Learning
@@ -81,6 +81,6 @@ user_groups:
 - Visitors
 ---
 
-A Brazilian expatriate in Paris. I have a Ph.D. in Economics from the Centre d'Économie de l'Université Paris Nord (CEPN) - Université Sorbonne Paris Nord. I love analyzing data and applying clever statistical methods to answer for real world questions. I am also the developer of the *sfcr* package for simulating and validating stock-flow consistent models with R.
+I am a Brazilian data scientist and economist expatriate in Paris. I love analyzing data and applying clever statistical methods to answer for real world questions. I am also the developer of the #*sfcr* package for simulating and validating stock-flow consistent models with R.
 
 I love football, economics, literature, and statistics, not necessarily in that order.
