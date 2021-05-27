@@ -1,6 +1,7 @@
 ---
 title: "sfcr package in action"
 author: João Pedro S. Macalós
+slug: sfcr-package-in-action
 categories: [sfcr]
 tags: [sfcr]
 subtitle: ''
@@ -13,7 +14,6 @@ image:
   focal_point: 'Center'
   preview_only: true
 projects: [sfcr]
-output: blogdown::html_page
 references:
 - id: godley2007monetary
   title: >
@@ -29,16 +29,16 @@ references:
     year: 2007
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
-<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
-<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
-<script src="{{< blogdown/postref >}}index_files/htmlwidgets/htmlwidgets.js"></script>
-<script src="{{< blogdown/postref >}}index_files/d3/d3.min.js"></script>
-<script src="{{< blogdown/postref >}}index_files/sankey/sankey.js"></script>
-<script src="{{< blogdown/postref >}}index_files/sankeyNetwork-binding/sankeyNetwork.js"></script>
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/d3/d3.min.js"></script>
+<script src="/rmarkdown-libs/sankey/sankey.js"></script>
+<script src="/rmarkdown-libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
 
 
-<p>The objective of this notebook is to show just the tip of the iceberg of what is possible to accomplish with the <em>sfcr</em> package. In this example, I’m going to work with the Portfolio Choice model from <span class="citation"><a href="#ref-godley2007monetary" role="doc-biblioref">Godley and Lavoie</a> (<a href="#ref-godley2007monetary" role="doc-biblioref">2007</a>)</span>.</p>
+<p>The objective of this notebook is to show the <em>sfcr</em> package in action. In this example, I’m going to work with the Portfolio Choice model from <span class="citation"><a href="#ref-godley2007monetary" role="doc-biblioref">Godley and Lavoie</a> (<a href="#ref-godley2007monetary" role="doc-biblioref">2007</a>)</span>.</p>
 <p>As usual, we start by loading the required packages:</p>
 <pre class="r"><code>library(tidyverse)
 #&gt; -- Attaching packages --------------------------------------- tidyverse 1.3.0 --
@@ -443,19 +443,20 @@ pc_ext &lt;- sfcr_set(
 <h2>DAG</h2>
 <p>Let’s use the <code>sfcr_dag_cycles_plot()</code> function to see the structure of the model:</p>
 <pre class="r"><code>sfcr_dag_cycles_plot(pc_eqs)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/post/2021-05-27-sfcr/sfcr_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>As can be seen, there’s a cycle in this model. The <code>sfcr</code> package relies on the <code>igraph</code> package to identify the best ordering of the equations, reducing the the its computational burden. The blocks of independent equations and the iterations needed at each block to simulate the model can be retrieved by calling the <code>sfcr_get_matrix()</code> and <code>sfcr_get_blocks()</code> equations.</p>
 <p>Alternatively, it is also possible to use the <code>sfcr_dag_blocks_plot()</code> function to visualize this structure:</p>
 <pre class="r"><code>sfcr_dag_blocks_plot(pc_eqs)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/post/2021-05-27-sfcr/sfcr_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 <div id="sankeys-diagram" class="section level2">
 <h2>Sankey’s diagram</h2>
 <p>Another functionality offered by the <code>sfcr</code> package is that it can generate a Sankey’s diagram representation of the transactions-flow matrix.</p>
 <p>Here, it is crucial to have the matrix validated in order to assure that the diagram is correctly specified. Luckily, we already saw that it was the case earlier in this notebook:</p>
-<pre class="r"><code>sfcr_sankey(tfm_pc, pc)</code></pre>
+<pre class="r"><code>sn &lt;- sfcr_sankey(tfm_pc, pc)
+htmlwidgets::onRender(sn, &#39;function(el) { el.querySelector(&quot;svg&quot;).removeAttribute(&quot;viewBox&quot;) }&#39;)</code></pre>
 <div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[8,10,9,10,11,8,8,8,12,0,1,2,3,3,4,5,6,7],"target":[0,1,2,3,4,5,6,7,7,14,14,13,13,16,15,15,17,15],"value":[43.418278,20,63.418278,0.796236,0.300973,12.782708,2.863079,4.849477,2.863079,43.418278,20,63.418278,0.495263,0.300973,0.300973,12.782708,2.863079,7.712555]},"nodes":{"name":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"],"group":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[8,10,9,10,11,8,8,8,12,0,1,2,3,3,4,5,6,7],"target":[0,1,2,3,4,5,6,7,7,14,14,13,13,16,15,15,17,15],"value":[43.418278,20,63.418278,0.796236,0.300973,12.782708,2.863079,4.849477,2.863079,43.418278,20,63.418278,0.495263,0.300973,0.300973,12.782708,2.863079,7.712555]},"nodes":{"name":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"],"group":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":{"render":[{"code":"function(el) { el.querySelector(\"svg\").removeAttribute(\"viewBox\") }","data":null}]}}</script>
 <p>We can now move to simulation of different scenarios.</p>
 </div>
 </div>
@@ -486,14 +487,14 @@ pc2_long %&gt;%
   geom_line() +
   facet_wrap(~ name, scales = &#39;free_y&#39;) +
   labs(title = &quot;Wealth alocation&quot;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="/post/2021-05-27-sfcr/sfcr_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <pre class="r"><code>pc2_long %&gt;%
   filter(name %in% c(&quot;YD&quot;, &quot;C&quot;)) %&gt;%
   ggplot(aes(x = period, y = value)) +
   geom_line(aes(linetype = name)) +
   labs(title = &quot;Evolution of disposable income and household consumption&quot;,
        subtitle = &quot;Following an increase of 100 points in the rate of interest&quot;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="/post/2021-05-27-sfcr/sfcr_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <div id="visualizing-the-sensitivity-to-parameters-values" class="section level2">
 <h2>Visualizing the sensitivity to parameters’ values</h2>
 <p>Let’s check the sensitivity of the model with the <code>sfcr_expand()</code> and <code>sfcr_multis()</code> functions:</p>
@@ -527,7 +528,7 @@ bind_rows(pc_multi_scn) %&gt;%
     values = getPalette(20),
     labels = as.character(values)) +
   facet_wrap(~ name, scales = &#39;free_y&#39;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="864" /></p>
+<p><img src="/post/2021-05-27-sfcr/sfcr_files/figure-html/unnamed-chunk-19-1.png" width="864" /></p>
 <p>We can see that the changing the <code>alpha1</code> parameter affects the level of the variables but do not change its underlying dynamics.</p>
 </div>
 </div>

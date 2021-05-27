@@ -1,6 +1,7 @@
 ---
 title: "sfcr package in action"
 author: João Pedro S. Macalós
+slug: sfcr-package-in-action
 categories: [sfcr]
 tags: [sfcr]
 subtitle: ''
@@ -13,7 +14,6 @@ image:
   focal_point: 'Center'
   preview_only: true
 projects: [sfcr]
-output: blogdown::html_page
 references:
 - id: godley2007monetary
   title: >
@@ -29,7 +29,7 @@ references:
     year: 2007
 ---
 
-The objective of this notebook is to show just the tip of the iceberg of what is possible to accomplish with the *sfcr* package. In this example, I'm going to work with the Portfolio Choice model from @godley2007monetary.
+The objective of this notebook is to show the *sfcr* package in action. In this example, I'm going to work with the Portfolio Choice model from @godley2007monetary.
 
 As usual, we start by loading the required packages:
 
@@ -172,7 +172,8 @@ Another functionality offered by the `sfcr` package is that it can generate a Sa
 Here, it is crucial to have the matrix validated in order to assure that the diagram is correctly specified. Luckily, we already saw that it was the case earlier in this notebook:
 
 ```{r}
-sfcr_sankey(tfm_pc, pc)
+sn <- sfcr_sankey(tfm_pc, pc)
+htmlwidgets::onRender(sn, 'function(el) { el.querySelector("svg").removeAttribute("viewBox") }')
 ```
 
 We can now move to simulation of different scenarios.
