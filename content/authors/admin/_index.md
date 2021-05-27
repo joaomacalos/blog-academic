@@ -10,24 +10,28 @@ authors:
 superuser: true
 
 # Role/position
-role: Ph.D. Candidate / Economics
+role: PhD Economist / Data Scientist
 
 # Organizations/Affiliations
 organizations:
-- name: Université Sorbonne Paris Nord
+- name: ""
   url: ""
 
 # Short bio (displayed in user profile at end of posts)
 bio: My research interests include international macroeconomics, financial globalization, and central banking in emerging markets.
 
 interests:
-- International macroeconomics
-- Central banking
+- Machine Learning
+- Econometrics
 - Stock-flow consistent models
 - Causal inference
+- Central Banking
 
 education:
   courses:
+  - course: PhD in Economics
+    institution: Université Sorbonne Paris Nord (Marie Skłodowska-Curie Fellow)
+    year: 2021
   - course: ME in Economics
     institution: Universidade Estadual de Campinas
     year: 2018
@@ -77,6 +81,6 @@ user_groups:
 - Visitors
 ---
 
-A Brazilian expatriate in Paris. I'm a Ph.D. candidate in Economics at the Centre d'Économie de l'Université Paris Nord (CEPN). My research interests include financial globalization, the integration of emerging economies to global markets, and international macroeconomics. I'm also one of the coordinators of the States & Markets working group at the Young Scholars' Initiative (YSI).
+A Brazilian expatriate in Paris. I have a Ph.D. in Economics from the Centre d'Économie de l'Université Paris Nord (CEPN) - Université Sorbonne Paris Nord. I love analyzing data and applying clever statistical methods to answer for real world questions. I am also the developer of the *sfcr* package for simulating and validating stock-flow consistent models with R.
 
-I love football (it is football, not soccer, please.), economics, literature, and statistics, not necessarily in that order.
+I love football, economics, literature, and statistics, not necessarily in that order.
