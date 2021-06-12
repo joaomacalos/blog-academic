@@ -1,20 +1,22 @@
 ---
 title: "Cohort analysis with Pandas and Seaborn"
-author: ''
-date: '2021-06-12'
-slug: [cohort]
+subtitle: A step-by-step tutorial
+author: João Pedro S. Macalós
+slug: cohort-pandas
 categories: [analytics]
 tags: [analytics]
-subtitle: 'A step-by-step tutorial'
 summary: ''
 authors: []
-lastmod: '2021-06-12T11:00:01+02:00'
-featured: no
+header:
+  img: "cohort.png"
+lastmod: '2021-06-12'
+featured: true
 image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
+  placement: 1
+  caption: "Photo by [Geo](https://github.com/gcushen/)"
+  focal_point: "Center"
+  preview_only: false
+  alt_text: An optional description of the image for screen readers.
 ---
 
 ```{r setup, include=FALSE}
@@ -143,7 +145,7 @@ ax = sns.barplot(
   x='cohort', 
   palette=np.array(pal)[rank]
   )
-ax.set(xlabel='Cohort', ylabel='# of sellers');
+ax.set(xlabel='Cohort', ylabel='# of sellers')
 plt.xticks(rotation=45);
 plt.tight_layout();
 plt.show()

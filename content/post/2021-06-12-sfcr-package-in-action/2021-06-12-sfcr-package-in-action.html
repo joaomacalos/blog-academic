@@ -1,0 +1,543 @@
+---
+title: "sfcr package in action"
+author: João Pedro S. Macalós
+slug: sfcr-package-in-action
+categories: [sfcr]
+tags: [sfcr]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-05-27'
+featured: true
+math: true
+image:
+  placement: 2
+  focal_point: 'Center'
+  preview_only: true
+projects: [sfcr]
+references:
+- id: godley2007monetary
+  title: >
+       Monetary Economics: An Integrated Approach To Credit, Money, Income, Production and Wealth
+  author:
+  - family: Godley
+    given: Wynne
+  - family: Lavoie
+    given: Marc
+  publisher: Palgrave Macmillan
+  type: book
+  issued:
+    year: 2007
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/d3/d3.min.js"></script>
+<script src="/rmarkdown-libs/sankey/sankey.js"></script>
+<script src="/rmarkdown-libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
+
+
+<p>The objective of this notebook is to show the <em>sfcr</em> package in action. In this example, I’m going to work with the Portfolio Choice model from <span class="citation"><a href="#ref-godley2007monetary" role="doc-biblioref">Godley and Lavoie</a> (<a href="#ref-godley2007monetary" role="doc-biblioref">2007</a>)</span>.</p>
+<p>As usual, we start by loading the required packages:</p>
+<pre class="r"><code>library(tidyverse)
+#&gt; -- Attaching packages --------------------------------------- tidyverse 1.3.0 --
+#&gt; v ggplot2 3.3.2     v purrr   0.3.4
+#&gt; v tibble  3.0.4     v dplyr   1.0.2
+#&gt; v tidyr   1.1.2     v stringr 1.4.0
+#&gt; v readr   1.4.0     v forcats 0.5.0
+#&gt; -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+#&gt; x dplyr::filter() masks stats::filter()
+#&gt; x dplyr::lag()    masks stats::lag()
+library(sfcr)</code></pre>
+<div id="the-matrices-of-model-pc" class="section level1">
+<h1>The matrices of model PC</h1>
+<p>We start the analysis by writing down the balance-sheet and transactions-flow matrices of the model with the help of the <code>sfcr_matrix()</code> function:</p>
+<pre class="r"><code>bs_pc &lt;- sfcr_matrix(
+  columns = c(&quot;Households&quot;, &quot;Firms&quot;, &quot;Government&quot;, &quot;Central bank&quot;, &quot;sum&quot;),
+  codes = c(&quot;h&quot;, &quot;f&quot;, &quot;g&quot;, &quot;cb&quot;, &quot;s&quot;),
+  r1 = c(&quot;Money&quot;, h = &quot;+Hh&quot;, cb = &quot;-Hs&quot;),
+  r2 = c(&quot;Bills&quot;, h = &quot;+Bh&quot;, g = &quot;-Bs&quot;, cb = &quot;+Bcb&quot;),
+  r3 = c(&quot;Balance&quot;, h = &quot;-V&quot;, g = &quot;+V&quot;)
+)
+
+sfcr_matrix_display(bs_pc, &quot;bs&quot;)</code></pre>
+<table style="color: black; width: auto !important; margin-left: auto; margin-right: auto;" class="table table-striped table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Households
+</th>
+<th style="text-align:left;">
+Firms
+</th>
+<th style="text-align:left;">
+Government
+</th>
+<th style="text-align:left;">
+Central bank
+</th>
+<th style="text-align:left;">
+<span class="math inline">\(\sum\)</span>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Money
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+Hh\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-Hs\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bills
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+Bh\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-Bs\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+Bcb\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Balance
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-V\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+V\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span class="math inline">\(\sum\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>tfm_pc &lt;- sfcr_matrix(
+  columns = c(&quot;Households&quot;, &quot;Firms&quot;, &quot;Government&quot;, &quot;CB current&quot;, &quot;CB capital&quot;),
+  codes = c(&quot;h&quot;, &quot;f&quot;, &quot;g&quot;, &quot;cbc&quot;, &quot;cbk&quot;),
+  c(&quot;Consumption&quot;, h = &quot;-C&quot;, f = &quot;+C&quot;),
+  c(&quot;Govt. Expenditures&quot;, f = &quot;+G&quot;, g = &quot;-G&quot;),
+  c(&quot;Income&quot;, h = &quot;+Y&quot;, f = &quot;-Y&quot;),
+  c(&quot;Int. payments&quot;, h = &quot;+r[-1] * Bh[-1]&quot;, g = &quot;-r[-1] * Bs[-1]&quot;, cbc = &quot;+r[-1] * Bcb[-1]&quot;),
+  c(&quot;CB profits&quot;, g = &quot;+r[-1] * Bcb[-1]&quot;, cbc = &quot;-r[-1] * Bcb[-1]&quot;),
+  c(&quot;Taxes&quot;, h = &quot;-TX&quot;, g = &quot;+TX&quot;),
+  c(&quot;Ch. Money&quot;, h = &quot;-(Hh - Hh[-1])&quot;, cbk = &quot;+(Hs - Hs[-1])&quot;),
+  c(&quot;Ch. Bills&quot;, h = &quot;-(Bh - Bh[-1])&quot;, g = &quot;+(Bs - Bs[-1])&quot;, cbk = &quot;-(Bcb - Bcb[-1])&quot;)
+)
+
+sfcr_matrix_display(tfm_pc)</code></pre>
+<table style="color: black; width: auto !important; margin-left: auto; margin-right: auto;" class="table table-striped table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Households
+</th>
+<th style="text-align:left;">
+Firms
+</th>
+<th style="text-align:left;">
+Government
+</th>
+<th style="text-align:left;">
+CB current
+</th>
+<th style="text-align:left;">
+CB capital
+</th>
+<th style="text-align:left;">
+<span class="math inline">\(\sum\)</span>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Consumption
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-C\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+C\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Govt. Expenditures
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+G\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-G\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Income
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+Y\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-Y\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Int. payments
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+r_{-1}\cdot Bh_{-1}\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-r_{-1}\cdot Bs_{-1}\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+r_{-1}\cdot Bcb_{-1}\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CB profits
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+r_{-1}\cdot Bcb_{-1}\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-r_{-1}\cdot Bcb_{-1}\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Taxes
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-TX\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+TX\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ch. Money
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-\Delta Hh\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+\Delta Hs\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ch. Bills
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-\Delta Bh\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(+\Delta Bs\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(-\Delta Bcb\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span class="math inline">\(\sum\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(0\)</span>
+</td>
+</tr>
+</tbody>
+</table>
+<div id="the-model" class="section level2">
+<h2>The model</h2>
+<p>To simulate the model, we first write down the equations and the external values with the <code>sfcr_set()</code> function:</p>
+<pre class="r"><code>pc_eqs &lt;- sfcr_set(
+  Y ~ C + G,
+  YD ~ Y - TX + r[-1] * Bh[-1],
+  TX ~ theta * (Y + r[-1] * Bh[-1]),
+  V ~ V[-1] + (YD - C),
+  C ~ alpha1 * YD + alpha2 * V[-1],
+  Hh ~ V - Bh,
+  Hh1 ~ V * ((1 - lambda0) - lambda1 * r + lambda2 * ( YD/V )), # EQ 4.6A
+  Bh ~ V * (lambda0 + lambda1 * r - lambda2 * ( YD/V )),
+  Bs ~ Bs[-1] + (G + r[-1] * Bs[-1]) - (TX + r[-1] * Bcb[-1]),
+  Hs ~ Hs[-1] + Bcb - Bcb[-1],
+  Bcb ~ Bs - Bh
+)
+
+pc_ext &lt;- sfcr_set(
+  # Exogenous
+  
+  r ~ 0.025,
+  G ~ 20,
+  
+  # Parameters
+  
+  alpha1 ~ 0.6,
+  alpha2 ~ 0.4,
+  theta ~ 0.2,
+  lambda0 ~ 0.635,
+  lambda1 ~ 0.05,
+  lambda2 ~ 0.01
+)</code></pre>
+<p>We then simulate the model to get the steady state values:</p>
+<pre class="r"><code>pc &lt;- sfcr_baseline(
+  equations = pc_eqs, 
+  external = pc_ext, 
+  periods = 70, 
+  hidden = c(&quot;Hh&quot; = &quot;Hs&quot;)
+)</code></pre>
+<p>The fact that the hidden equation is fulfilled already indicates that the accounting part of the model is water tight.</p>
+<p>However, the <code>sfcr</code> package proposes a validation workflow where the user uses the simulated model and the balance-sheet and transactions-flow matrices to further validate that the model is consistent.</p>
+<pre class="r"><code>sfcr_validate(bs_pc, pc, &quot;bs&quot;)
+#&gt; Water tight! The balance-sheet matrix is consistent with the simulated model.</code></pre>
+<pre class="r"><code>sfcr_validate(tfm_pc, pc, &quot;tfm&quot;)
+#&gt; Water tight! The transactions-flow matrix is consistent with the simulated model.</code></pre>
+<p>Given the portfolio choice equations, the model is well specified if equation 4.6A is equal to 4.6. We can use the base <code>all.equal()</code> function to check it:</p>
+<pre class="r"><code>all.equal(pc$Hh, pc$Hh1)
+#&gt; [1] TRUE</code></pre>
+<p>We can safely conclude that the baseline model is well specified. The <code>sfcr</code> package also allows the user to plot the DAG representation of the model and a Sankey’s diagram of the transactions-flow matrix. Let’s check it out:</p>
+</div>
+<div id="dag" class="section level2">
+<h2>DAG</h2>
+<p>Let’s use the <code>sfcr_dag_cycles_plot()</code> function to see the structure of the model:</p>
+<pre class="r"><code>sfcr_dag_cycles_plot(pc_eqs)</code></pre>
+<p><img src="/post/2021-06-12-sfcr-package-in-action/2021-06-12-sfcr-package-in-action_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>As can be seen, there’s a cycle in this model. The <code>sfcr</code> package relies on the <code>igraph</code> package to identify the best ordering of the equations, reducing the the its computational burden. The blocks of independent equations and the iterations needed at each block to simulate the model can be retrieved by calling the <code>sfcr_get_matrix()</code> and <code>sfcr_get_blocks()</code> equations.</p>
+<p>Alternatively, it is also possible to use the <code>sfcr_dag_blocks_plot()</code> function to visualize this structure:</p>
+<pre class="r"><code>sfcr_dag_blocks_plot(pc_eqs)</code></pre>
+<p><img src="/post/2021-06-12-sfcr-package-in-action/2021-06-12-sfcr-package-in-action_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+<div id="sankeys-diagram" class="section level2">
+<h2>Sankey’s diagram</h2>
+<p>Another functionality offered by the <code>sfcr</code> package is that it can generate a Sankey’s diagram representation of the transactions-flow matrix.</p>
+<p>Here, it is crucial to have the matrix validated in order to assure that the diagram is correctly specified. Luckily, we already saw that it was the case earlier in this notebook:</p>
+<pre class="r"><code>sn &lt;- sfcr_sankey(tfm_pc, pc)
+htmlwidgets::onRender(sn, &#39;function(el) { el.querySelector(&quot;svg&quot;).removeAttribute(&quot;viewBox&quot;) }&#39;)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="sankeyNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"links":{"source":[8,10,9,10,11,8,8,8,12,0,1,2,3,3,4,5,6,7],"target":[0,1,2,3,4,5,6,7,7,14,14,13,13,16,15,15,17,15],"value":[43.418278,20,63.418278,0.796236,0.300973,12.782708,2.863079,4.849477,2.863079,43.418278,20,63.418278,0.495263,0.300973,0.300973,12.782708,2.863079,7.712555]},"nodes":{"name":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"],"group":["Consumption","Govt. Expenditures","Income","Int. payments","CB profits","Taxes","Ch. Money","Ch. Bills","Households","Firms","Government","CB current","CB capital","Households","Firms","Government","CB current","CB capital"]},"options":{"NodeID":"name","NodeGroup":"name","LinkGroup":null,"colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":14,"fontFamily":null,"nodeWidth":15,"nodePadding":10,"units":"dollars","margin":{"top":null,"right":null,"bottom":null,"left":null},"iterations":32,"sinksRight":true}},"evals":[],"jsHooks":{"render":[{"code":"function(el) { el.querySelector(\"svg\").removeAttribute(\"viewBox\") }","data":null}]}}</script>
+<p>We can now move to simulation of different scenarios.</p>
+</div>
+</div>
+<div id="scenario-1-increase-in-the-rate-of-interest-on-bills" class="section level1">
+<h1>Scenario 1: Increase in the rate of interest on bills</h1>
+<p>Let’s start by increasing the rate of interest on bills by 100 points:</p>
+<pre class="r"><code>shock1 &lt;- sfcr_shock(
+  variables = sfcr_set(
+    r ~ 0.035
+  ),
+  start = 5,
+  end = 60
+)
+
+pc2 &lt;- sfcr_scenario(pc, scenario = shock1, periods = 60)</code></pre>
+<p>What happen in this scenario with the share of bills/money in household portfolios?</p>
+<p>Since these ratios are not calculated when we simulate the scenario, we must calculate them now. We use the <code>dplyr</code> package from the <code>tidyverse</code> to manipulate the model:</p>
+<pre class="r"><code>pc2 &lt;- pc2 %&gt;%
+  mutate(BV = Bh / V,
+         MV = Hh / V)</code></pre>
+<p>We reshape the model into the long format, and then we plot.</p>
+<pre class="r"><code>pc2_long &lt;- pc2 %&gt;%
+  pivot_longer(cols = -period)
+
+pc2_long %&gt;%
+  filter(name %in% c(&quot;BV&quot;, &quot;MV&quot;)) %&gt;%
+  ggplot(aes(x = period, y = value)) +
+  geom_line() +
+  facet_wrap(~ name, scales = &#39;free_y&#39;) +
+  labs(title = &quot;Wealth alocation&quot;)</code></pre>
+<p><img src="/post/2021-06-12-sfcr-package-in-action/2021-06-12-sfcr-package-in-action_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<pre class="r"><code>pc2_long %&gt;%
+  filter(name %in% c(&quot;YD&quot;, &quot;C&quot;)) %&gt;%
+  ggplot(aes(x = period, y = value)) +
+  geom_line(aes(linetype = name)) +
+  labs(title = &quot;Evolution of disposable income and household consumption&quot;,
+       subtitle = &quot;Following an increase of 100 points in the rate of interest&quot;)</code></pre>
+<p><img src="/post/2021-06-12-sfcr-package-in-action/2021-06-12-sfcr-package-in-action_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<div id="visualizing-the-sensitivity-to-parameters-values" class="section level2">
+<h2>Visualizing the sensitivity to parameters’ values</h2>
+<p>Let’s check the sensitivity of the model with the <code>sfcr_expand()</code> and <code>sfcr_multis()</code> functions:</p>
+<pre class="r"><code>values &lt;- seq(0.61, 0.8, 0.01)
+alpha1Exp &lt;- sfcr_expand(x = pc_ext, variable = alpha1, values = values)
+#</code></pre>
+<p>We then use the <code>sfcr_multis()</code> function to generate multiple baseline models:</p>
+<pre class="r"><code>pc_multi_bl &lt;- sfcr_multis(alpha1Exp, pc_eqs, periods = 50)</code></pre>
+<p>Finally, apply the <code>shock1</code> shock to all the models in <code>pc_multi_bl</code>:</p>
+<pre class="r"><code>shock1 &lt;- sfcr_shock(
+  variables = sfcr_set(
+    r ~ 0.035
+  ),
+  start = 5,
+  end = 50
+)
+
+pc_multi_scn &lt;- sfcr_multis(pc_multi_bl, shock1, periods = 50)</code></pre>
+<pre class="r"><code># We also need to expand the color palettes
+colourCount &lt;- 20 # number of levels
+getPalette &lt;- grDevices::colorRampPalette(RColorBrewer::brewer.pal(6, &quot;GnBu&quot;)[c(3:6)])
+
+bind_rows(pc_multi_scn) %&gt;%
+  mutate(simulation = as_factor(simulation)) %&gt;%
+  pivot_longer(cols = -c(period, simulation)) %&gt;%
+  filter(name %in% c(&quot;Y&quot;, &quot;YD&quot;, &quot;C&quot;)) %&gt;%
+  ggplot(aes(x = period, y = value, color = simulation)) +
+  geom_line() +
+  theme(legend.position = &quot;bottom&quot;) +
+  scale_color_manual(&quot;alpha10&quot;,
+    values = getPalette(20),
+    labels = as.character(values)) +
+  facet_wrap(~ name, scales = &#39;free_y&#39;)</code></pre>
+<p><img src="/post/2021-06-12-sfcr-package-in-action/2021-06-12-sfcr-package-in-action_files/figure-html/unnamed-chunk-19-1.png" width="864" /></p>
+<p>We can see that the changing the <code>alpha1</code> parameter affects the level of the variables but do not change its underlying dynamics.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-godley2007monetary" class="csl-entry">
+Godley, Wynne, and Marc Lavoie. 2007. <em>Monetary Economics: An Integrated Approach To Credit, Money, Income, Production and Wealth</em>. Palgrave Macmillan.
+</div>
+</div>
+</div>
