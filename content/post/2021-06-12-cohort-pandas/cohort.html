@@ -1,0 +1,219 @@
+---
+title: "Cohort analysis with Pandas and Seaborn"
+subtitle: A step-by-step tutorial
+author: João Pedro S. Macalós
+slug: cohort-pandas
+categories: [analytics]
+tags: [analytics]
+summary: ''
+authors: []
+lastmod: '2021-05-27'
+featured: true
+image:
+  placement: 2
+  focal_point: 'Center'
+  preview_only: true
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>This article was originally shared on Medium: <a href="https://joaomacalos.medium.com/cohort-analysis-with-pandas-and-seaborn-dd90c8ba5cdc" class="uri">https://joaomacalos.medium.com/cohort-analysis-with-pandas-and-seaborn-dd90c8ba5cdc</a></p>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The objective of this notebook is to show, step by step, how to implement a cohort analysis with Pandas and Seaborn.</p>
+<p>Coming from an R background, I like working with pipes and to chain commands to modify a DataFrame. The idea of writing this article came when I was trying to implement this analysis with Python and struggled with the existing tutorials. Therefore, the main objective of this post is to present the code — if you are curious about cohort analysis, there are plenty of articles available online.</p>
+</div>
+<div id="cohort-analysis" class="section level2">
+<h2>Cohort analysis</h2>
+<ul>
+<li>What is a cohort analysis?</li>
+</ul>
+<p>Cohort analysis is a type of analysis that follows a group of customers over time. For example, instead of analyzing our customers individually, we group them by date of sign-up in our app. In this way, we can analyze whether a marketing campaing implemented in a given month was effective or not.</p>
+<ul>
+<li>Why does it matter?</li>
+</ul>
+<p>Cohort analyses matter because churn is one of the main problems faced by companies nowadays, and every information that can lead to less churning is a valuable business information.</p>
+</div>
+<div id="olist-data" class="section level2">
+<h2>Olist data</h2>
+<p>To show how to implement a cohort analysis with <code>Pandas</code> and <code>Seaborn</code>, I will work with the Olist dataset. It is available on <a href="https://www.kaggle.com/olistbr/brazilian-ecommerce">Kaggle</a> and provide a good example of an e-commerce dataset. The schema of the data is available in the link above.</p>
+<p>The Olist plataform connects small business owners (the sellers) with customers from all over Brazil. Understanding whether sellers come back to the platform after their first sale is a crucial business question for Olist.</p>
+<p>Therefore, I will make the cohorts based on the month of the first sale of each seller. With this cohorts, I will track the proportion of sellers from each cohort that came back to the platform in the subsequent months.</p>
+<p>Hence, we must connect the <code>olist_sellers_dataset</code> where the <code>id</code> of each seller is located with the <code>olist_orders</code> dataset where we can find the date of each sale (<code>order_purchase_timestamp</code>) in the platform. These two tables are connected through the <code>olist_order_items_dataset</code>.</p>
+<div id="import-the-required-packages" class="section level3">
+<h3>1. Import the required packages</h3>
+<pre class="python"><code>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns</code></pre>
+</div>
+<div id="load-the-data" class="section level3">
+<h3>2. Load the data</h3>
+<pre class="python"><code>df_orders = pd.read_csv(&#39;../../../Datasets/olist_orders_dataset.csv&#39;)
+df_order_items = pd.read_csv(&#39;../../../Datasets/olist_order_items_dataset.csv&#39;)
+df_sellers = pd.read_csv(&#39;../../../Datasets/olist_sellers_dataset.csv&#39;)</code></pre>
+</div>
+<div id="join-the-data" class="section level3">
+<h3>3. Join the data</h3>
+<p>Join the datasets, convert <code>date</code> to correct type, remove observations outside the analysis boundaries, and select relevant columns:</p>
+<pre class="python"><code>df = pd.merge(df_order_items, df_orders, on=&#39;order_id&#39;)
+df = pd.merge(df, df_sellers, on=&#39;seller_id&#39;)
+df = (df
+     .assign(date = lambda x: pd.to_datetime(x.order_purchase_timestamp))
+     .query(&#39;date &gt;= &quot;2017-01-01&quot; &amp; date &lt; &quot;2018-09-01&quot;&#39;)
+     .loc[:, [&#39;seller_id&#39;, &#39;date&#39;]]
+     )
+df.head(3)</code></pre>
+<pre><code>##                           seller_id                date
+## 0  48436dade18ac8b2bce089ec2a041202 2017-09-13 08:59:02
+## 1  48436dade18ac8b2bce089ec2a041202 2017-07-23 16:13:37
+## 2  48436dade18ac8b2bce089ec2a041202 2017-08-10 12:17:35</code></pre>
+</div>
+<div id="create-the-cohorts" class="section level3">
+<h3>4. Create the cohorts</h3>
+<p>To find the cohorts, we must find the first appearance (<code>order_purchase_timestamp</code>) of each individual seller (<code>seller_id</code>). To do that, I’ll order the dataset by date of sale and drop the duplicates in the <code>seller_id</code> column.</p>
+<pre class="python"><code>seller_cohort = (df[[&#39;seller_id&#39;, &#39;date&#39;]]
+                 .assign(cohort = lambda x: x.date.dt.to_period(&#39;M&#39;))
+                 .sort_values(&#39;date&#39;)
+                 .drop_duplicates(&#39;seller_id&#39;)
+                 .reset_index()
+                 .loc[:, [&#39;seller_id&#39;, &#39;cohort&#39;]]
+                )
+seller_cohort.head(3)</code></pre>
+<pre><code>##                           seller_id   cohort
+## 0  48efc9d94a9834137efd9ea76b065a38  2017-01
+## 1  8f119a0aee85c0c8fc534629734e94fd  2017-01
+## 2  b14db04aa7881970e83ffa9426897925  2017-01</code></pre>
+</div>
+<div id="merge-data-and-calculate-delta" class="section level3">
+<h3>5. Merge data and calculate delta</h3>
+<p>In the next step, we need to:</p>
+<ul>
+<li>Merge the <code>seller_cohort</code> DataFrame with df on the <code>seller_id</code> column;</li>
+<li>Assign a column with the months of each sale;</li>
+<li>Assign a column that calculates the difference in months between the date of sale and the cohort (<code>delta</code>).</li>
+</ul>
+<pre class="python"><code>from operator import attrgetter
+
+cohort_df = (
+  pd.merge(df, seller_cohort, on=&#39;seller_id&#39;)
+  .assign(date_of_sale = lambda x: x.date.dt.to_period(&#39;M&#39;),
+          delta = lambda x: (x.date_of_sale - x.cohort).apply(attrgetter(&#39;n&#39;)))
+  .loc[:, [&#39;seller_id&#39;, &#39;date&#39;, &#39;cohort&#39;, &#39;date_of_sale&#39;, &#39;delta&#39;]]
+  )
+
+cohort_df.head(3)</code></pre>
+<pre><code>##                           seller_id                date  ... date_of_sale delta
+## 0  48436dade18ac8b2bce089ec2a041202 2017-09-13 08:59:02  ...      2017-09     6
+## 1  48436dade18ac8b2bce089ec2a041202 2017-07-23 16:13:37  ...      2017-07     4
+## 2  48436dade18ac8b2bce089ec2a041202 2017-08-10 12:17:35  ...      2017-08     5
+## 
+## [3 rows x 5 columns]</code></pre>
+<p>Before proceeding with the analysis, it’s important to visualize the size of each cohort we just created to see if there are no clear problems in the data:</p>
+<pre class="python"><code>size_cohorts = (cohort_df
+                .groupby([&#39;cohort&#39;, &#39;delta&#39;])[[&#39;seller_id&#39;]]
+                .nunique()
+                .query(&#39;delta == 0&#39;)
+                .reset_index()
+                )
+
+# Plot:
+sns.set(style=&quot;whitegrid&quot;, color_codes=True)
+pal = sns.color_palette(&quot;Greens_d&quot;, len(size_cohorts))
+rank = size_cohorts.seller_id.argsort().argsort()   
+# plt.figure(figsize=(8, 6))
+ax = sns.barplot(
+  data=size_cohorts, 
+  y=&#39;seller_id&#39;, 
+  x=&#39;cohort&#39;, 
+  palette=np.array(pal)[rank]
+  )
+ax.set(xlabel=&#39;Cohort&#39;, ylabel=&#39;# of sellers&#39;)</code></pre>
+<pre><code>## [Text(0.5, 0, &#39;Cohort&#39;), Text(0, 0.5, &#39;# of sellers&#39;)]</code></pre>
+<pre class="python"><code>plt.xticks(rotation=45);
+plt.tight_layout();
+plt.show()</code></pre>
+<p><img src="/post/2021-06-12-cohort-pandas/cohort_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>As we can see, there were some variability in the number of new sellers joining Olist in the period under analysis, but nothing really outstanding that invalidate our exercise in this post.</p>
+</div>
+<div id="count-sellers-in-each-cohort-per-delta-and-calculate-the-proportion" class="section level3">
+<h3>6. Count sellers in each cohort per delta and calculate the proportion</h3>
+<p>The next step consist in:</p>
+<ul>
+<li>Counting the unique sellers in each delta by each cohort;</li>
+<li>Counting the total sellers in each cohort (the number of sellers in the first month, i.e., when delta is equal to zero);</li>
+<li>Calculating the proportion of sellers present in each cohort afterwards.</li>
+</ul>
+<pre class="python"><code>cohort_df = (cohort_df
+             .groupby([&#39;cohort&#39;, &#39;delta&#39;])[[&#39;seller_id&#39;]]
+             .nunique()
+             .assign(total = lambda x: x.groupby(&#39;cohort&#39;)[[&#39;seller_id&#39;]]
+                                       .transform(lambda x: x[0]),
+                     proportion = lambda x: 100 * x.seller_id / x.total)
+             .reset_index()
+             .loc[:, [&#39;cohort&#39;, &#39;delta&#39;, &#39;proportion&#39;]]
+            )
+
+cohort_df.head(3)</code></pre>
+<pre><code>##     cohort  delta  proportion
+## 0  2017-01      0  100.000000
+## 1  2017-01      1   75.770925
+## 2  2017-01      2   73.568282</code></pre>
+</div>
+<div id="pivot-the-dataframe" class="section level3">
+<h3>7. Pivot the DataFrame</h3>
+<p>Now we have all the information we need to calculate make the cohort analysis, but it is in the long format. The following step consists in applying a <code>pivot()</code> method to reshape it:</p>
+<pre class="python"><code>cohort_pivot = (
+  cohort_df[[&#39;cohort&#39;, &#39;delta&#39;, &#39;proportion&#39;]]
+  .pivot(columns=&#39;delta&#39;, index=&#39;cohort&#39;)[&#39;proportion&#39;]
+  )
+cohort_pivot</code></pre>
+<pre><code>## delta       0          1          2   ...         17         18         19
+## cohort                                ...                                 
+## 2017-01  100.0  75.770925  73.568282  ...  38.766520  35.682819  39.207048
+## 2017-02  100.0  61.176471  54.509804  ...  28.627451  25.882353        NaN
+## 2017-03  100.0  57.954545  54.545455  ...  27.840909        NaN        NaN
+## 2017-04  100.0  55.371901  47.107438  ...        NaN        NaN        NaN
+## 2017-05  100.0  50.000000  50.000000  ...        NaN        NaN        NaN
+## 2017-06  100.0  42.105263  40.789474  ...        NaN        NaN        NaN
+## 2017-07  100.0  67.521368  60.683761  ...        NaN        NaN        NaN
+## 2017-08  100.0  54.263566  46.511628  ...        NaN        NaN        NaN
+## 2017-09  100.0  53.125000  54.687500  ...        NaN        NaN        NaN
+## 2017-10  100.0  66.216216  55.405405  ...        NaN        NaN        NaN
+## 2017-11  100.0  51.832461  54.973822  ...        NaN        NaN        NaN
+## 2017-12  100.0  57.777778  52.222222  ...        NaN        NaN        NaN
+## 2018-01  100.0  57.446809  50.354610  ...        NaN        NaN        NaN
+## 2018-02  100.0  52.500000  52.500000  ...        NaN        NaN        NaN
+## 2018-03  100.0  60.176991  53.097345  ...        NaN        NaN        NaN
+## 2018-04  100.0  59.900990  51.980198  ...        NaN        NaN        NaN
+## 2018-05  100.0  56.395349  56.976744  ...        NaN        NaN        NaN
+## 2018-06  100.0  56.020942  59.685864  ...        NaN        NaN        NaN
+## 2018-07  100.0  56.315789        NaN  ...        NaN        NaN        NaN
+## 2018-08  100.0        NaN        NaN  ...        NaN        NaN        NaN
+## 
+## [20 rows x 20 columns]</code></pre>
+</div>
+<div id="plot-with-seaborn" class="section level3">
+<h3>8. Plot with Seaborn</h3>
+<p>With the pivoted column, we can simply use the <code>sns.heatmap()</code> function to visualize the cohorts:</p>
+<pre class="python"><code>sns.heatmap(
+  cohort_pivot, 
+  cmap=&#39;crest&#39;, 
+  annot=True,
+  annot_kws={&quot;fontsize&quot;:7},
+  fmt=&#39;.0f&#39;
+  ).set_title(&quot;Olist Cohort Analysis&quot;)
+
+plt.show()</code></pre>
+<p><img src="/post/2021-06-12-cohort-pandas/cohort_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>It’s interesting to note that the first cohort was relatively more loyal to Olist than the cohorts that followed, with a participation rate 6 months after their first sale in the platform that was similar to the participation rate of the other cohorts. It’s also noteworthy that the cohort “2017–07” was also loyal to the brand. Now it is up to the marketing team of Olist to investigate further why some of the cohorts presented churn rates much lower than the others and act upon this information.</p>
+</div>
+<div id="full-code" class="section level3">
+<h3>Full code</h3>
+<p>The notebook with the full code of this analysis can be found here: <a href="https://github.com/joaomacalos/Medium/blob/main/cohort-pandas-seaborn.ipynb" class="uri">https://github.com/joaomacalos/Medium/blob/main/cohort-pandas-seaborn.ipynb</a></p>
+</div>
+</div>

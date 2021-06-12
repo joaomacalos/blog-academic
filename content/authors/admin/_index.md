@@ -18,7 +18,7 @@ organizations:
   url: ""
 
 # Short bio (displayed in user profile at end of posts)
-bio: My research interests include econometrics, machine learning, stock-flow consistent models, and central banking in emerging economies.
+bio: Interested in econometrics, machine learning, stock-flow consistent models, and central banking in emerging economies.
 
 interests:
 - Machine Learning
@@ -31,6 +31,9 @@ education:
   courses:
   - course: PhD in Economics
     institution: Université Sorbonne Paris Nord (Marie Skłodowska-Curie Fellow)
+    year: 2021
+  - course: Bootcamp in Data Analytics
+    institution: DataBird
     year: 2021
   - course: ME in Economics
     institution: Universidade Estadual de Campinas
@@ -81,6 +84,7 @@ user_groups:
 - Visitors
 ---
 
-I am a Brazilian data scientist and economist expatriate in Paris. I love analyzing data and applying clever statistical methods to answer for real world questions. I am also the developer of the #*sfcr* package for simulating and validating stock-flow consistent models with R.
+I am a Brazilian data scientist and economist expatriate in Paris. I love analyzing data and applying clever statistical methods to answer real-world questions. I am also the developer of the {*sfcr*} package for simulating and validating stock-flow consistent models with R.
 
 I love football, economics, literature, and statistics, not necessarily in that order.
+

@@ -11,3 +11,6 @@ public/
 .Rhistory
 .Rproj.user
 academic.Rproj
+
+# Datasets
+/Datasets/
