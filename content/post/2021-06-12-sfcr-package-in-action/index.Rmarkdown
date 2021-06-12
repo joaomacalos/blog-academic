@@ -1,18 +1,20 @@
 ---
-title: "sfcr package in action"
-author: João Pedro S. Macalós
-slug: sfcr-package-in-action
-categories: [sfcr]
-tags: [sfcr]
+title: sfcr package in action
+author: 'João Macalós'
+date: '2021-06-12'
+slug: []
+categories: []
+tags: []
 subtitle: ''
 summary: ''
 authors: []
-lastmod: '2021-05-27'
-featured: true
+lastmod: '2021-06-12T11:07:45+02:00'
+featured: no
+math: true
 image:
-  placement: 2
-  focal_point: 'Center'
-  preview_only: true
+  caption: ''
+  focal_point: ''
+  preview_only: no
 projects: [sfcr]
 references:
 - id: godley2007monetary
@@ -29,7 +31,7 @@ references:
     year: 2007
 ---
 
-The objective of this notebook is to show the *sfcr* package in action. In this example, I'm going to work with the Portfolio Choice model from @godley2007monetary.
+The objective of this are notebook is to show the *sfcr* package in action. In this example, I'm going to work with the Portfolio Choice model from @godley2007monetary.
 
 As usual, we start by loading the required packages:
 
