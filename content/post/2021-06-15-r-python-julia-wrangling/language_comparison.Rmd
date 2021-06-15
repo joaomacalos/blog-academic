@@ -1,0 +1,181 @@
+---
+title: "Comparing R, Python, and Julia for a simple data-wrangling task"
+author: João Pedro S. Macalós
+slug: r-python-julia-wrangling
+categories: ''
+tags: [data-wrangling]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-15'
+featured: true
+math: true
+image:
+  placement: 2
+  focal_point: 'Center'
+  preview_only: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The objective of this notebook is to compare how R-dplyr, Pandas, and Julia DataFrames handle a very common and simple data-wrangling task: load a CSV file in memory, correct data types, filter out the top 3 rows, exclude the missing values and then plot the resulting values.
+
+I had the idea to make this post when I downloaded the dataset containing the monthly evolution of commodity prices this week. To give a bit of context, there's a debate in the economics community about a new [new commodities supercycle](https://www.ft.com/content/f3650c8f-70a2-4f86-a648-9dc0b4434348). Since this topic is close to the research subject of my PhD, I decided to get the data from the source and plot it myself.
+
+When I opened the database, I realized that the excel file was "dirty" enough to require some data-wrangling, but simple enough to do it in a couple of lines. Therefore, a perfect example for a short comparison between R, Python, and Julia.
+
+The original dataset can be obtained directly at the [IMF's website](https://www.imf.org/en/Research/commodity-prices).
+
+## R - tidyverse
+
+```{r, message = FALSE, warning = FALSE}
+# Load required libraries
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+# Read csv
+commodities <- read_csv('../../../Datasets/imf-commodities.csv')
+```
+
+```{r}
+# Data-wrangling
+commodities <- commodities %>%
+  select(date = Commodity, comm = PALLFNF) %>%
+  slice(4:n()) %>%
+  drop_na() %>%
+  mutate(
+    date = ym(date),
+    comm = as.numeric(comm)
+  )
+
+head(commodities)
+```
+
+
+```{r}
+# Plot
+commodities %>%
+  ggplot(aes(x=date, y=comm)) +
+  geom_line(aes(color='All commodity prices (IMF)')) +
+  theme(legend.position = c(.8, .1),
+        legend.title = element_blank()) +
+  labs(x="", y="") +
+  scale_color_manual(values="black")
+```
+
+## Python
+
+```{r}
+reticulate::use_condaenv("job-scrapper")
+```
+
+```{python}
+# Load required libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+```
+
+
+```{python}
+# Read csv
+commodities = pd.read_csv('../../../Datasets/imf-commodities.csv')
+```
+
+```{python}
+# Data wrangling
+commodities = (
+    commodities
+    .loc[3:, ['Commodity', 'PALLFNF']]
+    .dropna()
+    .assign(
+        date=lambda x: pd.to_datetime(x.Commodity, format='%YM%m'),
+        comm=lambda x: x.PALLFNF.astype('float')
+    )
+)
+
+commodities.head()
+```
+
+```{python}
+plt.close()
+```
+
+
+```{python}
+# Plot
+sns.lineplot(
+  data=commodities, 
+  x='date', y='comm',
+  label='All commodity prices (IMF)'
+  );
+plt.legend(loc="lower right")
+plt.show()
+```
+
+## Julia
+
+```{julia}
+# Load required packages
+using CSV
+using DataFrames
+using Plots
+using Pipe
+using Dates
+```
+
+```{julia}
+# Read csv
+commodities = CSV.read("../../../Datasets/imf-commodities.csv", DataFrame);
+```
+
+```{julia}
+# Data-wrangling
+commodities = @pipe commodities |>
+    _[4:end, [:Commodity, :PALLFNF]] |>
+    dropmissing(_) |>
+    transform(_, :Commodity => (x -> replace.(x, ("M" => "-"))) => :date) |>
+    transform(_, :date => (x -> Date.(x, "y-m")) => :date) |>
+    transform(_, :PALLFNF => (x -> parse.(Float32, x)) => :comm);
+
+first(commodities, 6)
+```
+
+```{julia, fig.width=6.5, fig.height=4}
+# Plot
+Plots.plot(
+    commodities.date, 
+    commodities.comm,
+    html_output_format=:png, # Important for nice printing
+    label = "All commodity prices (IMF)",
+    legend= :bottomright
+)
+```
+
+One of the main complaints about Julia was the annoying time to first plot. Although there is still a delay to run the first plot in Julia, version 1.6. greatly improved on this aspect, and the difference nowadays is much much smaller.
+
+## Conclusion
+
+All three languages can perfectly handle such a small data-wrangling task.
+
+However, I think that it is clear that the `tidyverse` packages provide the highest abstraction with their efficient data masks. Therefore, it ranks as the easiest code to read for someone that is not used to code.
+
+`Pandas` comes in a close second, but `lambda` functions require some (little) practice to get used to.
+
+Julia `DataFrames` comes in third as it requires placeholders (`_`) in every line, macros, lambda functions, broadcasting. As a consequence, the code is cluttered with symbols (`@`, `_`, `.`, `:`, `->`, `=>`). In any case, it is nothing particularly complicated and anyone can get used to it with a little practice.
+
+Plotting-wise, I think that the three alternatives that I explored in the post have their pros and cons. Julia `Plots` seems quite intuitive, but there are still some bugs like the size of the Plot display in HTML format that requires a lot of googling to partially get rid of. 
+
+`ggplot2`, on the other hand, requires some practice to get used to. Nonetheless, it is worth it as it is just amazing how flexible it is, and how wide the community is. There's a very high chance that **any** plot you want to make was already done using `ggplot2`. 
+
+Finally, `Seaborn` is a great improvement over `matplotlib.pyplot`, and I see it becoming a serious contender to `gggplot2` hegemony. For me, the main problem of `Seaborn` is that whenever you need to customize it, you are left in the wild kingdom of `pyplot` and its overly complicated syntax.
+
+My conclusion is that all three languages are amazing. I love R, and I must admit that the `tidyverse` packages are the main responsible for it. `Python` is impressive for its versatility, and a must nowadays if you want to work in the industry. Finally, I want to love Julia, but I think it is not quite there yet. It is supposed to be fast as C and as readable as Python -- and I love this idea. However, the community remains quite small, which increases substantially the entry cost as it takes much longer to get fluent with it, and it is rarely used in the industry.
+
+PS: I can't finish without praising `knitr` and `RMarkdown` notebooks. It's incredible that I ran all this post in a single notebook in Rstudio. It would even be possible to use the variables defined in one of the languages in the others.
+

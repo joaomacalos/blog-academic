@@ -1,0 +1,153 @@
+---
+title: "Comparing R, Python, and Julia for a simple data-wrangling task"
+author: João Pedro S. Macalós
+slug: r-python-julia-wrangling
+categories: ''
+tags: [data-wrangling]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-15'
+featured: true
+math: true
+image:
+  placement: 2
+  focal_point: 'Center'
+  preview_only: true
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>The objective of this notebook is to compare how R-dplyr, Pandas, and Julia DataFrames handle a very common and simple data-wrangling task: load a CSV file in memory, correct data types, filter out the top 3 rows, exclude the missing values and then plot the resulting values.</p>
+<p>I had the idea to make this post when I downloaded the dataset containing the monthly evolution of commodity prices this week. To give a bit of context, there’s a debate in the economics community about a new <a href="https://www.ft.com/content/f3650c8f-70a2-4f86-a648-9dc0b4434348">new commodities supercycle</a>. Since this topic is close to the research subject of my PhD, I decided to get the data from the source and plot it myself.</p>
+<p>When I opened the database, I realized that the excel file was “dirty” enough to require some data-wrangling, but simple enough to do it in a couple of lines. Therefore, a perfect example for a short comparison between R, Python, and Julia.</p>
+<p>The original dataset can be obtained directly at the <a href="https://www.imf.org/en/Research/commodity-prices">IMF’s website</a>.</p>
+<div id="r---tidyverse" class="section level2">
+<h2>R - tidyverse</h2>
+<pre class="r"><code># Load required libraries
+library(tidyverse)
+library(lubridate)</code></pre>
+<pre class="r"><code># Read csv
+commodities &lt;- read_csv(&#39;../../../Datasets/imf-commodities.csv&#39;)</code></pre>
+<pre class="r"><code># Data-wrangling
+commodities &lt;- commodities %&gt;%
+  select(date = Commodity, comm = PALLFNF) %&gt;%
+  slice(4:n()) %&gt;%
+  drop_na() %&gt;%
+  mutate(
+    date = ym(date),
+    comm = as.numeric(comm)
+  )
+
+head(commodities)</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   date        comm
+##   &lt;date&gt;     &lt;dbl&gt;
+## 1 1992-01-01  50.3
+## 2 1992-02-01  50.2
+## 3 1992-03-01  50.3
+## 4 1992-04-01  50.7
+## 5 1992-05-01  52.1
+## 6 1992-06-01  52.3</code></pre>
+<pre class="r"><code># Plot
+commodities %&gt;%
+  ggplot(aes(x=date, y=comm)) +
+  geom_line(aes(color=&#39;All commodity prices (IMF)&#39;)) +
+  theme(legend.position = c(.8, .1),
+        legend.title = element_blank()) +
+  labs(x=&quot;&quot;, y=&quot;&quot;) +
+  scale_color_manual(values=&quot;black&quot;)</code></pre>
+<p><img src="/post/2021-06-15-r-python-julia-wrangling/language_comparison_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="python" class="section level2">
+<h2>Python</h2>
+<pre class="r"><code>reticulate::use_condaenv(&quot;job-scrapper&quot;)</code></pre>
+<pre class="python"><code># Load required libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt</code></pre>
+<pre class="python"><code># Read csv
+commodities = pd.read_csv(&#39;../../../Datasets/imf-commodities.csv&#39;)</code></pre>
+<pre class="python"><code># Data wrangling
+commodities = (
+    commodities
+    .loc[3:, [&#39;Commodity&#39;, &#39;PALLFNF&#39;]]
+    .dropna()
+    .assign(
+        date=lambda x: pd.to_datetime(x.Commodity, format=&#39;%YM%m&#39;),
+        comm=lambda x: x.PALLFNF.astype(&#39;float&#39;)
+    )
+)
+
+commodities.head()</code></pre>
+<pre><code>##     Commodity PALLFNF       date    comm
+## 147    1992M1  50.254 1992-01-01  50.254
+## 148    1992M2  50.247 1992-02-01  50.247
+## 149    1992M3  50.273 1992-03-01  50.273
+## 150    1992M4  50.689 1992-04-01  50.689
+## 151    1992M5  52.135 1992-05-01  52.135</code></pre>
+<pre class="python"><code>plt.close()</code></pre>
+<pre class="python"><code># Plot
+sns.lineplot(
+  data=commodities, 
+  x=&#39;date&#39;, y=&#39;comm&#39;,
+  label=&#39;All commodity prices (IMF)&#39;
+  );
+plt.legend(loc=&quot;lower right&quot;)</code></pre>
+<pre><code>## &lt;matplotlib.legend.Legend object at 0x7f2f514a9430&gt;</code></pre>
+<pre class="python"><code>plt.show()</code></pre>
+<p><img src="/post/2021-06-15-r-python-julia-wrangling/language_comparison_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="julia" class="section level2">
+<h2>Julia</h2>
+<pre class="julia"><code># Load required packages
+using CSV
+using DataFrames
+using Plots
+using Pipe
+using Dates</code></pre>
+<pre class="julia"><code># Read csv
+commodities = CSV.read(&quot;../../../Datasets/imf-commodities.csv&quot;, DataFrame);</code></pre>
+<pre class="julia"><code># Data-wrangling
+commodities = @pipe commodities |&gt;
+    _[4:end, [:Commodity, :PALLFNF]] |&gt;
+    dropmissing(_) |&gt;
+    transform(_, :Commodity =&gt; (x -&gt; replace.(x, (&quot;M&quot; =&gt; &quot;-&quot;))) =&gt; :date) |&gt;
+    transform(_, :date =&gt; (x -&gt; Date.(x, &quot;y-m&quot;)) =&gt; :date) |&gt;
+    transform(_, :PALLFNF =&gt; (x -&gt; parse.(Float32, x)) =&gt; :comm);
+
+first(commodities, 6)</code></pre>
+<pre><code>## 6×4 DataFrame
+##  Row │ Commodity  PALLFNF  date        comm
+##      │ String     String   Date        Float32
+## ─────┼─────────────────────────────────────────
+##    1 │ 1992M1     50.254   1992-01-01   50.254
+##    2 │ 1992M2     50.247   1992-02-01   50.247
+##    3 │ 1992M3     50.273   1992-03-01   50.273
+##    4 │ 1992M4     50.689   1992-04-01   50.689
+##    5 │ 1992M5     52.135   1992-05-01   52.135
+##    6 │ 1992M6     52.347   1992-06-01   52.347</code></pre>
+<pre class="julia"><code># Plot
+Plots.plot(
+    commodities.date, 
+    commodities.comm,
+    html_output_format=:png, # Important for nice printing
+    label = &quot;All commodity prices (IMF)&quot;,
+    legend= :bottomright
+)</code></pre>
+<p><img src="/post/2021-06-15-r-python-julia-wrangling/language_comparison_files/figure-html/unnamed-chunk-14-J1.png" width="300" /></p>
+<p>One of the main complaints about Julia was the annoying time to first plot. Although there is still a delay to run the first plot in Julia, version 1.6. greatly improved on this aspect, and the difference nowadays is much much smaller.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>All three languages can perfectly handle such a small data-wrangling task.</p>
+<p>However, I think that it is clear that the <code>tidyverse</code> packages provide the highest abstraction with their efficient data masks. Therefore, it ranks as the easiest code to read for someone that is not used to code.</p>
+<p><code>Pandas</code> comes in a close second, but <code>lambda</code> functions require some (little) practice to get used to.</p>
+<p>Julia <code>DataFrames</code> comes in third as it requires placeholders (<code>_</code>) in every line, macros, lambda functions, broadcasting. As a consequence, the code is cluttered with symbols (<code>@</code>, <code>_</code>, <code>.</code>, <code>:</code>, <code>-&gt;</code>, <code>=&gt;</code>). In any case, it is nothing particularly complicated and anyone can get used to it with a little practice.</p>
+<p>Plotting-wise, I think that the three alternatives that I explored in the post have their pros and cons. Julia <code>Plots</code> seems quite intuitive, but there are still some bugs like the size of the Plot display in HTML format that requires a lot of googling to partially get rid of.</p>
+<p><code>ggplot2</code>, on the other hand, requires some practice to get used to. Nonetheless, it is worth it as it is just amazing how flexible it is, and how wide the community is. There’s a very high chance that <strong>any</strong> plot you want to make was already done using <code>ggplot2</code>.</p>
+<p>Finally, <code>Seaborn</code> is a great improvement over <code>matplotlib.pyplot</code>, and I see it becoming a serious contender to <code>gggplot2</code> hegemony. For me, the main problem of <code>Seaborn</code> is that whenever you need to customize it, you are left in the wild kingdom of <code>pyplot</code> and its overly complicated syntax.</p>
+<p>My conclusion is that all three languages are amazing. I love R, and I must admit that the <code>tidyverse</code> packages are the main responsible for it. <code>Python</code> is impressive for its versatility, and a must nowadays if you want to work in the industry. Finally, I want to love Julia, but I think it is not quite there yet. It is supposed to be fast as C and as readable as Python – and I love this idea. However, the community remains quite small, which increases substantially the entry cost as it takes much longer to get fluent with it, and it is rarely used in the industry.</p>
+<p>PS: I can’t finish without praising <code>knitr</code> and <code>RMarkdown</code> notebooks. It’s incredible that I ran all this post in a single notebook in Rstudio. It would even be possible to use the variables defined in one of the languages in the others.</p>
+</div>
